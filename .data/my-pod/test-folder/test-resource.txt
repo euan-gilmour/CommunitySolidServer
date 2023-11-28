@@ -1,0 +1,1 @@
+This is a text document that should only be readable to agents with the required Verifiable Credentials.
