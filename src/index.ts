@@ -295,6 +295,8 @@ export * from './server/HttpServerFactory';
 export * from './server/OperationHttpHandler';
 export * from './server/ParsingHttpHandler';
 export * from './server/ServerConfigurator';
+export * from './server/VcAuthorizingHttpHandler'; 
+export * from './server/VcHttpHandler';
 export * from './server/WacAllowHttpHandler';
 export * from './server/WebSocketHandler';
 export * from './server/WebSocketServerConfigurator';

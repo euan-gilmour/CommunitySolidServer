@@ -29,7 +29,8 @@
           "http://www.w3.org/ns/solid/acp#target",
           "http://www.w3.org/ns/solid/acp#agent",
           "http://www.w3.org/ns/solid/acp#client",
-          "http://www.w3.org/ns/solid/acp#issuer"
+          "http://www.w3.org/ns/solid/acp#issuer",
+          "http://www.w3.org/ns/solid/acp#vc"
         ]
       }]
     },

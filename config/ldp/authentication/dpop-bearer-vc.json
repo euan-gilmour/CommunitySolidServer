@@ -6,18 +6,14 @@
       "@id": "urn:solid-server:default:CredentialsExtractor",
       "@type": "CachedHandler",
       "source": {
-        "comment": "Supports DPoP and Bearer access tokens, or no credentials.",
+        "comment": "Supports VC, DPoP and Bearer access tokens, or no credentials.",
         "@type": "UnionCredentialsExtractor",
         "extractors": [
           {
             "@type": "WaterfallHandler",
             "handlers": [
               {
-                "@type": "VcExtractor",
-                "originalUrlExtractor": {
-                  "@type": "OriginalUrlExtractor",
-                  "args_identifierStrategy": { "@id": "urn:solid-server:default:IdentifierStrategy" }
-                }
+                "@type": "VcExtractor"
               },
               {
                 "@type": "DPoPWebIdExtractor",
