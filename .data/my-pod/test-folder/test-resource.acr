@@ -17,6 +17,9 @@
         acp:anyOf [
             a acp:Matcher;
             #acp:agent acp:PublicAgent
-            acp:vc "https://ben3101.solidcommunity.net/wallet/49bfc3f0-83ce-11ee-b459-9d4a51a00867.jsonld"
+            #acp:vc "https://ben3101.solidcommunity.net/wallet/49bfc3f0-83ce-11ee-b459-9d4a51a00867.jsonld";
+            acp:client "my-demo-app";
+            acp:issuer "https://ben3101.solidcommunity.net";
+            acp:agent "https://ben3101.solidcommunity.net";
         ]
     ].
