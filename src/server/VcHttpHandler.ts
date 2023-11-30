@@ -44,7 +44,7 @@ export class VcHttpHandler extends HttpHandler {
   private readonly requestParser: RequestParser;
   private readonly errorHandler: ErrorHandler;
   private readonly responseWriter: ResponseWriter;
-  private readonly operationHandler: OperationHttpHandler; //this should be an authorizinghttphandler - use to check vc, vp
+  private readonly operationHandler: OperationHttpHandler; //this should be an authorizinghttphandler - use to check initial message
   //maybe make a specific class for it and slot it into the config file at vc-http-handler.json,
 
   public constructor(args: VcHttpHandlerArgs) {
@@ -65,22 +65,21 @@ export class VcHttpHandler extends HttpHandler {
       }
 
       if (result) {
-        this.logger.info(result.data.toString());
+        this.logger.info('Sending Response...');
         return await this.responseWriter.handleSafe({ response, result });
       }
   }
 
   //This handler will only respond to requests that have a vc issuer, app and user name in the header
-  //possibly add check for VP message too, handles both of those messages.
+  //Or if it has a nonce and domain (uri)
   public async canHandle({ request, response }: HttpHandlerInput): Promise<void> {  
     if((request.headers['vcissuer'] !== undefined && 
     request.headers['app'] !== undefined && 
     request.headers['user'] !== undefined)
-    || (request.headers['nonce'] !== undefined)//test code until i know what to check for detecting VP message
+    || (request.headers['nonce'] !== undefined && request.headers['uri'] !== undefined)//test code until i know what to check for detecting VP message
   ){
     }else{
-      //this.logger.info("'VC headers missing: vcissuer, app, user.'");
-      throw new Error('VC headers missing: vcissuer, app, user.');
+      throw new Error('VC headers missing: vcissuer, app, user, or nonce and domain (uri).');
     }
   }
 
@@ -93,17 +92,30 @@ export class VcHttpHandler extends HttpHandler {
     //handle if it is the initial request
     if(this.isInitialRequest(request)){
       this.logger.info('Detected Initial Request');
-      return await this.handleInitialRequest(request, response);
+      //check the vc headers are valid for the requested resource
+      if(await this.validUserAppIssuer(request, response)){
+        return await this.handleInitialRequest(request, response);
+      }else{
+        throw new Error('Invalid user - app - issuer combination.');
+      }
+      
+      //else it is the secondary request, proceed with authorization checks to verify VP
     }else if(this.isSecondaryRequest(request)){
-      //else it is the secondary request, proceed with authorization to verify VP
       this.logger.info('Detected Secondary Request');
-      this.logger.info(`Nonce: ${request.headers['nonce']} URI: ${request.url}`);
+      this.logger.info(`Nonce: ${request.headers['nonce']} URI: ${request.headers['uri']}`);
+
+      //check nonce and uri are correct
+      
+
+      //verify VP
+      
+      //if valid, get authorizer to approve operation
+      //TODO...return some way of approving it...
     }
 
     const operation = await this.requestParser.handleSafe(request);
 
     //operationHandler should be instance of VcAuthorizingHttpHandler.
-    //code there should verify VP and determine access to resource
     const result = await this.operationHandler.handleSafe({ operation, request, response });
     //result from VcAuthorizingHttpHandler gets returned and written into response outputted
     this.logger.verbose(`Parsed ${operation.method} operation on ${operation.target.path}`);
@@ -131,6 +143,21 @@ export class VcHttpHandler extends HttpHandler {
    * 
    */
 
+  //TODO - checks ACP policy to see if user, app, issuer combination match requested resource's access rules
+  public async validUserAppIssuer(request: HttpRequest, response: HttpResponse) : Promise<boolean>{
+    //TODO
+    //this should check acr file. If it returns true the permissions match, otherwise it threw an error 
+    try{
+      const operation = await this.requestParser.handleSafe(request);
+      const result = await this.operationHandler.handleSafe({ operation, request, response });
+      this.logger.info("Valid User/App/Issuer combination");
+      return true;
+    }catch(e){
+      this.logger.info("Invalid User/App/Issuer combination");
+      return false;
+    }
+  }
+
   public isInitialRequest(request: HttpRequest) : boolean{
     return (request.headers['vcissuer'] !== undefined && 
     request.headers['app'] !== undefined && 
@@ -144,10 +171,6 @@ export class VcHttpHandler extends HttpHandler {
 
 
   public async handleInitialRequest(request: HttpRequest, response: HttpResponse) : Promise<ResponseDescription>{
-    //const operation = await this.requestParser.handleSafe(request);
-
-    //check ACP for vcissuer, app, user combo and respond if it is acceptable
-
     //generate a dummy http response to test server responding in event it accepted vcissuer/app/user
     //const nonce = crypto.randomUUID();
     const crypto = require('crypto');
@@ -159,6 +182,7 @@ export class VcHttpHandler extends HttpHandler {
 
     let result : ResponseDescription = new ResponseDescription(401);
 
+    //TODO - proper way to generate VPreq
     //https://w3c-ccg.github.io/vp-request-spec/#browser-credential-handler-api-chapi placeholder
     let VPrequest = {
       "VerifiablePresentation": {
@@ -182,11 +206,9 @@ export class VcHttpHandler extends HttpHandler {
         "https://wallet.example"
       ]
     };
-    //response.write('Test http body: gimme VP');
     const representation = new BasicRepresentation(JSON.stringify(VPrequest), 'application/ld+json');
     result.data = representation.data;
     return result;
-    //return await this.responseWriter.handleSafe({response, result});
   }
 
   /**
