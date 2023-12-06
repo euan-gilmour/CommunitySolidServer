@@ -3,8 +3,10 @@ import type { CredentialsExtractor } from '../authentication/CredentialsExtracto
 import type { Authorizer } from '../authorization/Authorizer';
 import type { PermissionReader } from '../authorization/PermissionReader';
 import type { ModesExtractor } from '../authorization/permissions/ModesExtractor';
+import { Operation } from '../http/Operation';
 import type { ResponseDescription } from '../http/output/response/ResponseDescription';
 import { getLoggerFor } from '../logging/LogUtil';
+import { HttpRequest } from './HttpRequest';
 import type { OperationHttpHandlerInput } from './OperationHttpHandler';
 import { OperationHttpHandler } from './OperationHttpHandler';
 
@@ -31,9 +33,6 @@ export interface VcAuthorizingHttpHandlerArgs {
   operationHandler: OperationHttpHandler;
 }
 
-/**
- * TODO - code here should handle secondary request ie verifying VP
- */
 
 /**
  * Handles all the necessary steps for an authorization.
@@ -87,5 +86,24 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
     this.logger.verbose(`Authorization succeeded, calling source handler`);
 
     return this.operationHandler.handleSafe(input);
+  }
+
+  //check acr has appropriate combo for user, app, issuer
+  public async checkAcr(operation: Operation, request: HttpRequest): Promise<boolean>{
+    const credentials: Credentials = await this.credentialsExtractor.handleSafe(request);
+    this.logger.info(`Extracted credentials: ${JSON.stringify(credentials)}`);
+
+    const requestedModes = await this.modesExtractor.handleSafe(operation);
+    this.logger.info(`Retrieved required modes: ${
+      [ ...requestedModes.entrySets() ].map(([ id, set ]): string => `{ ${id.path}: ${[ ...set ]} }`)
+    }`);
+
+    const availablePermissions = await this.permissionReader.handleSafe({ credentials, requestedModes });
+    this.logger.info(`Available permissions are ${
+      [ ...availablePermissions.entries() ].map(([ id, map ]): string => `{ ${id.path}: ${JSON.stringify(map)} }`)
+    }`);
+
+    //return true if any permissions are available to this combination of user/app/issuer as this means there is a match
+    return (Array.from(availablePermissions.values()).some((value) => value.read === true));
   }
 }

@@ -2,7 +2,6 @@
   "@context": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^6.0.0/components/context.jsonld",
   "@graph": [
     {
-      "comment": "TODO - figure out if a dedicated http handler is necessary or if LdpHandler will deal with it sufficiently.",
       "@id": "urn:solid-server:default:VcHandler",
       "@type": "VcHttpHandler",
       "args_requestParser": { "@id": "urn:solid-server:default:RequestParser" },

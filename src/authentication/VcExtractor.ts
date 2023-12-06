@@ -23,7 +23,7 @@ export class VcExtractor extends CredentialsExtractor {
   }
 
   public async canHandle({ headers }: HttpRequest): Promise<void> {  
-    if(headers['vcissuer']){
+    if(headers['vcissuer'] && headers['user'] && headers['app']){
       //this.logger.info(`Found VC Issuer header in HTTP request : ${headers['vcissuer']}`);
     }else{
       //this.logger.info("Did not find VC Issuer header in HTTP request");
@@ -35,7 +35,7 @@ export class VcExtractor extends CredentialsExtractor {
     try {
       const issuer: any = request.headers['vcissuer']; //issuer of the relevant vc the user holds
       const webId: any = request.headers['user']; //user sending request
-      const clientId: any = request.headers['app']; //name of application?
+      const clientId: any = request.headers['app']; //name of application
       const credentials : Credentials = {
         agent: {webId: webId},
         issuer: {url: issuer}
