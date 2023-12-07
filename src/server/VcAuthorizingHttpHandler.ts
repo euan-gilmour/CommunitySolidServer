@@ -1,11 +1,13 @@
 import type { Credentials } from '../authentication/Credentials';
 import type { CredentialsExtractor } from '../authentication/CredentialsExtractor';
+import { VcExtractor } from '../authentication/VcExtractor';
 import type { Authorizer } from '../authorization/Authorizer';
 import type { PermissionReader } from '../authorization/PermissionReader';
 import type { ModesExtractor } from '../authorization/permissions/ModesExtractor';
 import { Operation } from '../http/Operation';
 import type { ResponseDescription } from '../http/output/response/ResponseDescription';
 import { getLoggerFor } from '../logging/LogUtil';
+import { readJsonStream } from '../util/StreamUtil';
 import { HttpRequest } from './HttpRequest';
 import type { OperationHttpHandlerInput } from './OperationHttpHandler';
 import { OperationHttpHandler } from './OperationHttpHandler';
@@ -14,7 +16,7 @@ export interface VcAuthorizingHttpHandlerArgs {
   /**
    * Extracts the credentials from the incoming request.
    */
-  credentialsExtractor: CredentialsExtractor;
+  credentialsExtractor: VcExtractor;
   /**
    * Extracts the required modes from the generated Operation.
    */
@@ -46,7 +48,7 @@ export interface VcAuthorizingHttpHandlerArgs {
 export class VcAuthorizingHttpHandler extends OperationHttpHandler {
   private readonly logger = getLoggerFor(this);
 
-  private readonly credentialsExtractor: CredentialsExtractor;
+  private readonly credentialsExtractor: VcExtractor;
   private readonly modesExtractor: ModesExtractor;
   private readonly permissionReader: PermissionReader;
   private readonly authorizer: Authorizer;
@@ -63,7 +65,9 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
 
   public async handle(input: OperationHttpHandlerInput): Promise<ResponseDescription> {
     const { request, operation } = input;
-    const credentials: Credentials = await this.credentialsExtractor.handleSafe(request);
+    let body: NodeJS.Dict<any> = await readJsonStream(operation.body.data);
+    const credentials: Credentials = await this.credentialsExtractor.getCredentials(body);
+
     this.logger.verbose(`Extracted credentials: ${JSON.stringify(credentials)}`);
 
     const requestedModes = await this.modesExtractor.handleSafe(operation);
@@ -106,4 +110,5 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
     //return true if any permissions are available to this combination of user/app/issuer as this means there is a match
     return (Array.from(availablePermissions.values()).some((value) => value.read === true));
   }
+  
 }
