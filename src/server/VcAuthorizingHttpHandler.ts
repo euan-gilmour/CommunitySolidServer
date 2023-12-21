@@ -1,6 +1,7 @@
 import type { Credentials } from '../authentication/Credentials';
 import type { CredentialsExtractor } from '../authentication/CredentialsExtractor';
 import { VcExtractor } from '../authentication/VcExtractor';
+import { VpChecker } from '../authentication/VpChecker';
 import type { Authorizer } from '../authorization/Authorizer';
 import type { PermissionReader } from '../authorization/PermissionReader';
 import type { ModesExtractor } from '../authorization/permissions/ModesExtractor';
@@ -35,7 +36,6 @@ export interface VcAuthorizingHttpHandlerArgs {
   operationHandler: OperationHttpHandler;
 }
 
-
 /**
  * Handles all the necessary steps for an authorization.
  * Errors if authorization fails, otherwise passes the parameter to the operationHandler handler.
@@ -65,36 +65,59 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
 
   public async handle(input: OperationHttpHandlerInput): Promise<ResponseDescription> {
     const { request, operation } = input;
-    let body: NodeJS.Dict<any> = await readJsonStream(operation.body.data);
-    const credentials: Credentials = await this.credentialsExtractor.getCredentials(body);
+    //let body: NodeJS.Dict<any> = await readJsonStream(operation.body.data);
+    //const credentials: Credentials = await this.credentialsExtractor.getCredentials(body);
+    let credentials : Credentials;
+    try{
+      credentials = await new VpChecker().handleSafe(request);
+    }catch(error: unknown){
+      //this.logger.verbose(`Authorization failed: ${(error as any).message}`);
+      this.logger.info(`Authorization failed: ${(error as any).message}`);
+      throw error;
+    }
 
-    this.logger.verbose(`Extracted credentials: ${JSON.stringify(credentials)}`);
+    //this.logger.verbose(`Extracted credentials: ${JSON.stringify(credentials)}`);
+    this.logger.info(`Extracted credentials: ${JSON.stringify(credentials)}`);
 
     const requestedModes = await this.modesExtractor.handleSafe(operation);
-    this.logger.verbose(`Retrieved required modes: ${
+    // this.logger.verbose(`Retrieved required modes: ${
+    //   [ ...requestedModes.entrySets() ].map(([ id, set ]): string => `{ ${id.path}: ${[ ...set ]} }`)
+    // }`);
+    this.logger.info(`Retrieved required modes: ${
       [ ...requestedModes.entrySets() ].map(([ id, set ]): string => `{ ${id.path}: ${[ ...set ]} }`)
     }`);
 
     const availablePermissions = await this.permissionReader.handleSafe({ credentials, requestedModes });
-    this.logger.verbose(`Available permissions are ${
+    // this.logger.verbose(`Available permissions are ${
+    //   [ ...availablePermissions.entries() ].map(([ id, map ]): string => `{ ${id.path}: ${JSON.stringify(map)} }`)
+    // }`);
+    this.logger.info(`Available permissions are ${
       [ ...availablePermissions.entries() ].map(([ id, map ]): string => `{ ${id.path}: ${JSON.stringify(map)} }`)
     }`);
 
     try {
       await this.authorizer.handleSafe({ credentials, requestedModes, availablePermissions });
     } catch (error: unknown) {
-      this.logger.verbose(`Authorization failed: ${(error as any).message}`);
+      //this.logger.verbose(`Authorization failed: ${(error as any).message}`);
+      this.logger.info(`Authorization failed: ${(error as any).message}`);
       throw error;
     }
 
-    this.logger.verbose(`Authorization succeeded, calling source handler`);
+    //this.logger.verbose(`Authorization succeeded, calling source handler`);
+    this.logger.info(`Authorization succeeded, calling source handler`);
 
     return this.operationHandler.handleSafe(input);
   }
 
+  //approve an authorized operation
+  public async approve(input: OperationHttpHandlerInput): Promise<ResponseDescription> {
+    return this.operationHandler.handleSafe(input);
+  }
+
   //check acr has appropriate combo for user, app, issuer
-  public async checkAcr(operation: Operation, request: HttpRequest): Promise<boolean>{
-    const credentials: Credentials = await this.credentialsExtractor.handleSafe(request);
+  //uses VcExtractor and just takes these values from body of initial request
+  public async checkAcr(operation: Operation, body: NodeJS.Dict<any>): Promise<boolean>{
+    const credentials: Credentials = await this.credentialsExtractor.getCredentials(body);
     this.logger.info(`Extracted credentials: ${JSON.stringify(credentials)}`);
 
     const requestedModes = await this.modesExtractor.handleSafe(operation);
@@ -109,6 +132,10 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
 
     //return true if any permissions are available to this combination of user/app/issuer as this means there is a match
     return (Array.from(availablePermissions.values()).some((value) => value.read === true));
+  }
+
+  public async getCredentials(body: NodeJS.Dict<any>) : Promise<Credentials>{
+    return this.credentialsExtractor.getCredentials(body);
   }
   
 }

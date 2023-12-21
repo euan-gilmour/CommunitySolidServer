@@ -13,8 +13,10 @@ import type { OperationHttpHandler } from './OperationHttpHandler';
 import { BasicRepresentation } from '../http/representation/BasicRepresentation';
 import { VcAuthorizingHttpHandler } from './VcAuthorizingHttpHandler';
 import { readJsonStream } from '../util/StreamUtil';
+import { Operation } from '../http/Operation';
+import { Credentials } from '../authentication/Credentials';
+import { VpChecker } from '../authentication/VpChecker';
 
-//based on ParsingHTTPHandler
 export interface VcHttpHandlerArgs {
   /**
    * Parses the incoming requests.
@@ -31,15 +33,32 @@ export interface VcHttpHandlerArgs {
   /**
    * Handler to send the operation to.
    */
-  //operationHandler: OperationHttpHandler;
   operationHandler: VcAuthorizingHttpHandler;
 
 }
 
 /**
+ * Detects HTTP requests that intend to follow a VC-based authentication and authorization protocol
  * Parses requests and sends the resulting {@link Operation} to the wrapped {@link OperationHttpHandler}.
  * Errors are caught and handled by the {@link ErrorHandler}.
  * In case the {@link OperationHttpHandler} returns a result it will be sent to the {@link ResponseWriter}.
+ */
+
+/**
+ * Initial message:
+ * 1) Request is received for a resource:
+ *  -it has 'vc' in its header - indicating this will be vc based protocol
+ *  -body contains user and vc issuer
+ * 2) Check acp policy for matching user and vc issuer, using call to checkAcr method on VcAuthorizingHttpHandler
+ *  -generate nonce and domain, and save them in map
+ *  -generate VP request, include nonce and domain and respond with it in a 401 message
+ * 
+ * Second message:
+ * 1) Request is received with 'VP' in its header - indicates verifiable presentation
+ *  -check nonce and domain are valid compared with saved values
+ *  -pass data to VcAuthorizingHttpHandler to try to authorize
+ *    -VpChecker should be called from there to verify VP and extract issuer and user credentials from it
+ *    -request should be authorized
  */
 export class VcHttpHandler extends HttpHandler {
   private readonly logger = getLoggerFor(this);
@@ -49,6 +68,8 @@ export class VcHttpHandler extends HttpHandler {
   private readonly responseWriter: ResponseWriter;
 
   private readonly operationHandler: VcAuthorizingHttpHandler;
+  private nonceDomainMap: Map<any, any>;//nonce: domain
+  private nonceCredentialsMap: Map<any, Credentials>;//keep track of nonces and the credentials of the user they were sent to. nonce:creds
 
   public constructor(args: VcHttpHandlerArgs) {
     super();
@@ -56,13 +77,25 @@ export class VcHttpHandler extends HttpHandler {
     this.errorHandler = args.errorHandler;
     this.responseWriter = args.responseWriter;
     this.operationHandler = args.operationHandler;
+    this.nonceDomainMap = new Map<any, any>();
+    this.nonceCredentialsMap = new Map<any, any>();
   }
 
   public async handle({ request, response }: HttpHandlerInput): Promise<void> {
     let result: ResponseDescription;
+    let body: NodeJS.Dict<any>;
+
+    //extract body from http request
+    const operation = await this.requestParser.handleSafe(request);
+    try{
+      body = await readJsonStream(operation.body.data);
+    }catch(error: unknown){
+      body = {};
+      result = await this.handleError(error, request);
+    }
 
       try {
-        result = await this.handleRequest(request, response);
+        result = await this.handleRequest(request, response, body);
       } catch (error: unknown) {
         result = await this.handleError(error, request);
       }
@@ -73,56 +106,45 @@ export class VcHttpHandler extends HttpHandler {
       }
   }
 
-  //This handler will only respond to requests that have a vc issuer, app and user name in the header (initial request)
-  //Or if it has a valid nonce and domain (Verifiable Presentation) 
-  //*Currently checks nonce and domain exist, when possible should be changed to check they match the stored values
-  public async canHandle({ request, response }: HttpHandlerInput): Promise<void> {  
-    if((request.headers['vcissuer'] !== undefined && 
-    request.headers['app'] !== undefined && 
-    request.headers['user'] !== undefined)
-    || (request.headers['nonce'] !== undefined && request.headers['domain'] !== undefined)
-  ){
+  //This handler will only respond to requests that have:
+  //-a 'vc' header (Initial Request)
+  //-a 'vp' header (Secondary Request/Verifiable Presentation) 
+  public async canHandle({ request, response }: HttpHandlerInput): Promise<void> {
+    if((request.headers['vc'] !== undefined) || 
+    (request.headers['vp'] !== undefined)){
+      return;
     }else{
-      throw new Error('VC headers missing: vcissuer, app, user; or VP invalid nonce and domain.');
+      throw new Error("Required headers missing: 'VC' or 'VP'.");
     }
   }
 
   /**
-   * Interprets the request and passes the generated Operation object to the stored OperationHttpHandler.
+   * Interprets the request and generates a response description that can be used by the ResponseWriter to respond
    */
-  protected async handleRequest(request: HttpRequest, response: HttpResponse):
+  protected async handleRequest(request: HttpRequest, response: HttpResponse, body: NodeJS.Dict<any>):
   Promise<ResponseDescription> {
+    const operation = await this.requestParser.handleSafe(request);
 
     //handle if it is the initial request
-    if(this.isInitialRequest(request)){
+    if(this.isInitialRequest(body)){
       this.logger.info('Detected Initial Request');
       //check the vc headers are valid for the requested resource
-      if(await this.validUserAppIssuer(request, response)){
-        return await this.handleInitialRequest(request, response);
+      if(await this.validUserAppIssuer(request, body)){
+        return await this.handleInitialRequest(request, body);
       }else{
         throw new Error('Invalid user - app - issuer combination.');
       }
       
-      //else it is the secondary request, proceed with authorization checks to verify VP
+      //handle if it is the secondary request - proceed with authorization checks to verify VP
     }else if(this.isSecondaryRequest(request)){
       this.logger.info('Detected Secondary Request');
-      this.logger.info(`Nonce: ${request.headers['nonce']} Domain: ${request.headers['domain']}`);
-
-      //verify VP
-      if(this.isValidVP()){
-        let accessToken = {"accessToken" : "1234567890abcdefghij"}; // = methodToGenerateToken();...
-        this.logger.info(`VP verified. Generated Access Token: ${accessToken}`);
-        //code for adding token to the response
-        let result : ResponseDescription = new ResponseDescription(200);
-        const representation = new BasicRepresentation(JSON.stringify(accessToken), 'application/ld+json');
-        result.data = representation.data;
-        return result;
+      if(await this.validNonceAndDomain(request)){
+        return await this.handleSecondRequest(request, response, body);
       }else{
-        throw new Error('Verifiable Presentation could not be verified. Access denied.');
+        throw new Error('Invalid Nonce and Domain.');
       }
     }
 
-    const operation = await this.requestParser.handleSafe(request);
     const result = await this.operationHandler.handleSafe({ operation, request, response });
     //result gets returned and written into response outputted
     this.logger.verbose(`Parsed ${operation.method} operation on ${operation.target.path}`);
@@ -142,19 +164,12 @@ export class VcHttpHandler extends HttpHandler {
     return result;
   }
 
-  /**
-   * VC request checking code?
-   * -
-   * - 
-   * - create VP request, include nonce and store nonce for later check
-   * 
-   */
 
   //checks ACP policy to see if user, app, issuer combination match requested resource's access rules
-  public async validUserAppIssuer(request: HttpRequest, response: HttpResponse) : Promise<boolean>{
+  public async validUserAppIssuer(request: HttpRequest, body: NodeJS.Dict<any>) : Promise<boolean>{
     //this should check acr file and it return true the permissions match
     const operation = await this.requestParser.handleSafe(request);
-    const isValid : boolean = await this.operationHandler.checkAcr(operation, request);
+    const isValid : boolean = await this.operationHandler.checkAcr(operation, body);
     if(isValid){
       this.logger.info("Valid User/App/Issuer combination");
     }else{
@@ -164,30 +179,31 @@ export class VcHttpHandler extends HttpHandler {
   }
 
   //initial request will contain header with vc issuer, app, user
-  public isInitialRequest(request: HttpRequest) : boolean{
-    return (request.headers['vcissuer'] !== undefined && 
-    request.headers['app'] !== undefined && 
-    request.headers['user'] !== undefined);
+  public isInitialRequest(body: NodeJS.Dict<any>) : boolean{
+    return (body['vcissuer'] !== undefined && 
+    //body['app'] !== undefined && 
+    body['user'] !== undefined);
   }
 
-  //the secondary request will contain a nonce and uri in the header
-  //and this will match what was sent out in the previous response with VP request
+  //the secondary request will contain a VP in the header
   public isSecondaryRequest(request: HttpRequest) : boolean{
-    const nonce = request.headers['nonce'];
-    const domain = request.headers['domain'];
-    return this.validNonceAndDomain(nonce, domain);
+    return request.headers['vp']!==undefined;
   }
 
-  public async handleInitialRequest(request: HttpRequest, response: HttpResponse) : Promise<ResponseDescription>{
+  //deal with the initial request and respond with a VP request
+  public async handleInitialRequest(request: HttpRequest, body: NodeJS.Dict<any>) : Promise<ResponseDescription>{
     const crypto = require('crypto');
     const nonce = crypto.randomBytes(16).toString('base64');
     this.logger.info(`Generated Nonce: ${nonce}`);
     const uri = request.url;
+    //store nonce and domain in the map
+    this.nonceDomainMap.set(nonce, uri);
 
-    const operation = await this.requestParser.handleSafe(request);
-    let body = await readJsonStream(operation.body.data);
-    this.logger.info(`Testing reading body of HTTP requests... body['test] = ${body.test}`);
-    
+    //store credentials in another map, with nonce as a key for later use
+    let cred = await this.operationHandler.getCredentials(body);
+    this.nonceCredentialsMap.set(nonce, cred);
+    this.logger.info(`stored credentials: ${cred.agent}, ${cred.client}, ${cred.issuer}`);
+    this.logger.info(`credentials map.get(nonce): ${this.nonceCredentialsMap.get(nonce)}`);
     let result : ResponseDescription = new ResponseDescription(401);
 
     //TODO - proper way to generate VP Request
@@ -223,20 +239,24 @@ export class VcHttpHandler extends HttpHandler {
    * VP checking code
    */
 
-  public validNonceAndDomain(nonce: any, domain: any) : boolean{
-    let valid : boolean = true;
-    //TODO - figure out nonce/domain storage and checks. Just set to true for now.
-    //retrieve stored nonce and domain, return whether they are equal to the inputs
-    //storedNonce = ...
-    //storedDomain = ...
-    //valid = (nonce == storedNonce && domain == storedDomain);
-    return valid;
+  public async handleSecondRequest(request: HttpRequest, response: HttpResponse, body: NodeJS.Dict<any>): Promise<ResponseDescription>{
+    //verify VP
+      const operation = await this.requestParser.handleSafe(request);
+      try{
+        return this.operationHandler.handle({operation, request, response});
+      }catch(error: unknown){
+        throw new Error('Verifiable Presentation could not be verified. Access denied.');
+      }
   }
 
-  //verify that the VP signature 
-  public isValidVP(){
-    //TODO code for verifying the VP, just set to true for now
-    return true;
+  //if the nonce matches a saved nonce, check the domain also matches
+  public async validNonceAndDomain(request: HttpRequest) : Promise<boolean>{
+    const {nonce, domain} = await new VpChecker().extractNonceAndDomain(request);
+    console.log(`VP: Nonce - ${nonce}, Domain: ${domain}`);
+    if(this.nonceDomainMap.has(nonce)){
+      return domain === this.nonceDomainMap.get(nonce);
+    }
+    return false;
   }
-  
+
 }

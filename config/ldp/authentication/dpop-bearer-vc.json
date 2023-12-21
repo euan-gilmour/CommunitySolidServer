@@ -12,9 +12,7 @@
           {
             "@type": "WaterfallHandler",
             "handlers": [
-              {
-                "@type": "VcExtractor"
-              },
+
               {
                 "@type": "DPoPWebIdExtractor",
                 "originalUrlExtractor": {
