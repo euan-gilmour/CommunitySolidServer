@@ -63,10 +63,10 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
     this.operationHandler = args.operationHandler;
   }
 
+  //uses the VpChecker component to verify the VP, extracts credentials from a valid VP
+  //checks the extracted credentials against the acr file for the requested resource
   public async handle(input: OperationHttpHandlerInput): Promise<ResponseDescription> {
     const { request, operation } = input;
-    //let body: NodeJS.Dict<any> = await readJsonStream(operation.body.data);
-    //const credentials: Credentials = await this.credentialsExtractor.getCredentials(body);
     let credentials : Credentials;
     try{
       credentials = await new VpChecker().handleSafe(request);
@@ -109,7 +109,7 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
     return this.operationHandler.handleSafe(input);
   }
 
-  //approve an authorized operation
+  //force approve an authorized operation, for tests
   public async approve(input: OperationHttpHandlerInput): Promise<ResponseDescription> {
     return this.operationHandler.handleSafe(input);
   }
@@ -134,6 +134,7 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
     return (Array.from(availablePermissions.values()).some((value) => value.read === true));
   }
 
+  //uses VcExtractor component to just extract credentials from the body of the request
   public async getCredentials(body: NodeJS.Dict<any>) : Promise<Credentials>{
     return this.credentialsExtractor.getCredentials(body);
   }

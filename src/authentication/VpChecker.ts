@@ -66,21 +66,24 @@ export class VpChecker extends CredentialsExtractor {
     //check VP is valid
     const validVP = verifiedVP.verified;
     this.logger.info('Verified? : '+validVP)
-    console.log(verifiedVP.payload);
 
     if(!validVP){
       this.logger.warn('Invalid VP');
       throw new Error(`Error: Invalid VP`);
     }
+    console.log(verifiedVP.payload);
 
+    this.logger.info('Verifying VC...');
     //extract the VC from the JWT VP payload and check it is valid
     const vcJwt = verifiedVP.payload.vp.verifiableCredential[0];
     const verifiedVC = await verifyCredential(vcJwt, resolver);
     const validVC = verifiedVC.verified;
+    this.logger.info('Verified? : '+validVC);
     if(!validVC){
       this.logger.warn('Invalid VC');
       throw new Error(`Error: Invalid VC`);
     }
+    console.log(verifiedVC.payload);
 
     //the agent is the holder of the VP?
     const webid = verifiedVP.verifiablePresentation.holder;

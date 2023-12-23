@@ -12,7 +12,6 @@
           {
             "@type": "WaterfallHandler",
             "handlers": [
-
               {
                 "@type": "DPoPWebIdExtractor",
                 "originalUrlExtractor": {

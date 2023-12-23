@@ -5,7 +5,7 @@ import type { Credentials } from './Credentials';
 
 
 /**
- * Credentials extractor that extracts User, App and Issuer from HTTP request.
+ * Simple Credentials extractor that can extract User, App and Issuer from body of HTTP request.
  */
 export class VcExtractor {
   protected readonly logger = getLoggerFor(this);
@@ -13,14 +13,6 @@ export class VcExtractor {
   public constructor() {
     //super();
   }
-
-  //get credentials if called from WacAllowHttpHandler
-  // public async handle(request: HttpRequest): Promise<Credentials>{
-  //   let accessToken: any = request.headers['accessToken'];
-  //   let credentials: any = accessToken['credentials'];
-
-  //   return credentials;
-  // }
 
   public async getCredentials(body: NodeJS.Dict<any>): Promise<Credentials>{
     try {
