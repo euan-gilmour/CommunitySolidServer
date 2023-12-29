@@ -35,7 +35,7 @@
   ],
   "@graph": [
     {
-      "comment": "A Solid server that stores its resources on disk and uses ACP for authorization. TODO - add support for Verifiable Credentials"
+      "comment": "A Solid server that stores its resources on disk and uses ACP for authorization. Supports a VC-based authentication/authorisation protocol"
     }
   ]
 }

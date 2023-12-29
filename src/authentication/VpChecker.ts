@@ -1,5 +1,3 @@
-import type { SolidTokenVerifierFunction } from '@solid/access-token-verifier';
-import { createSolidTokenVerifier } from '@solid/access-token-verifier';
 import { getLoggerFor } from '../logging/LogUtil';
 import type { HttpRequest } from '../server/HttpRequest';
 import { BadRequestHttpError } from '../util/errors/BadRequestHttpError';
@@ -20,7 +18,7 @@ export class VpChecker extends CredentialsExtractor {
   }
 
   public async canHandle({ headers }: HttpRequest): Promise<void> {
-    if(headers['vp']===undefined){
+    if(headers['vp'] === undefined){
       throw new NotImplementedHttpError('No VP header specified.');
     }
   }
@@ -29,10 +27,13 @@ export class VpChecker extends CredentialsExtractor {
     const { headers: { authorization }} = request;
 
     try {
-      const { webid: webId, iss: issuer } = await this.verify(request);
+      const { webid: webId, client_id: clientId, iss: issuer } = await this.verify(request);
       this.logger.info(`Verified credentials via VP. WebID: ${webId
-      }, client ID: N/A, issuer: ${issuer}`);
+      }, client ID: ${clientId}, issuer: ${issuer}`);
       const credentials: Credentials = { agent: { webId }, issuer: { url: issuer }};
+      if (clientId) {
+        credentials.client = { clientId };
+      }
       return credentials;
     } catch (error: unknown) {
       const message = `Error verifying WebID via VP: ${(error as Error).message}`;
@@ -42,13 +43,13 @@ export class VpChecker extends CredentialsExtractor {
   }
 
   public async extractNonceAndDomain(request: HttpRequest): Promise<any>{
-    this.logger.info('Extracting nonce and domain...');
+    //this.logger.info('Extracting nonce and domain...');
     let VP = request.headers['vp']?.toString();
     if(VP){
       let payload = decodeJWT(VP).payload;
       let nonce = payload.vp.nonce;
       let domain = payload.vp.domain;
-      this.logger.info(`Nonce: ${nonce}, Domain: ${domain}`);
+      //this.logger.info(`Nonce: ${nonce}, Domain: ${domain}`);
       return {nonce: nonce, domain: domain};
     }
     return null;
@@ -85,14 +86,20 @@ export class VpChecker extends CredentialsExtractor {
     }
     console.log(verifiedVC.payload);
 
+    let clientId: any;
+    let payload = decodeJWT(vpJwt).payload;
+    if(payload.vp.appName){
+      clientId = payload.vp.appName;
+    }
+    
     //the agent is the holder of the VP?
-    const webid = verifiedVP.verifiablePresentation.holder;
+    //const webid = verifiedVP.verifiablePresentation.holder;
 
     //the agent is the subject of the VC?
-    //const webid = verifiedVC.payload.sub;
+    const webid: any = verifiedVC.payload.sub;
 
     //the issuer is the issuer of the VC
     const iss: any = verifiedVC.payload.iss;
-    return {webid: webid, iss: iss };
+    return { webid: webid, client_id: clientId, iss: iss };
   }
 }

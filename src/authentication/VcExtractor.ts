@@ -1,5 +1,4 @@
 import { getLoggerFor } from '../logging/LogUtil';
-import { HttpRequest } from '../server/HttpRequest';
 import { BadRequestHttpError } from '../util/errors/BadRequestHttpError';
 import type { Credentials } from './Credentials';
 

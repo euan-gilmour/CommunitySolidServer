@@ -1,5 +1,4 @@
 import type { Credentials } from '../authentication/Credentials';
-import type { CredentialsExtractor } from '../authentication/CredentialsExtractor';
 import { VcExtractor } from '../authentication/VcExtractor';
 import { VpChecker } from '../authentication/VpChecker';
 import type { Authorizer } from '../authorization/Authorizer';
@@ -8,16 +7,21 @@ import type { ModesExtractor } from '../authorization/permissions/ModesExtractor
 import { Operation } from '../http/Operation';
 import type { ResponseDescription } from '../http/output/response/ResponseDescription';
 import { getLoggerFor } from '../logging/LogUtil';
-import { readJsonStream } from '../util/StreamUtil';
 import { HttpRequest } from './HttpRequest';
 import type { OperationHttpHandlerInput } from './OperationHttpHandler';
 import { OperationHttpHandler } from './OperationHttpHandler';
 
 export interface VcAuthorizingHttpHandlerArgs {
   /**
-   * Extracts the credentials from the incoming request.
+   * Extracts the credentials from the body of the initial request of VC-based protocol.
    */
   credentialsExtractor: VcExtractor;
+
+  /**
+   * Verifies the Verifiable Presentation message and extracts valid Credentials from it.
+   */
+  vpChecker: VpChecker;
+
   /**
    * Extracts the required modes from the generated Operation.
    */
@@ -49,6 +53,7 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
   private readonly logger = getLoggerFor(this);
 
   private readonly credentialsExtractor: VcExtractor;
+  private readonly vpChecker: VpChecker;
   private readonly modesExtractor: ModesExtractor;
   private readonly permissionReader: PermissionReader;
   private readonly authorizer: Authorizer;
@@ -57,6 +62,7 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
   public constructor(args: VcAuthorizingHttpHandlerArgs) {
     super();
     this.credentialsExtractor = args.credentialsExtractor;
+    this.vpChecker = args.vpChecker;
     this.modesExtractor = args.modesExtractor;
     this.permissionReader = args.permissionReader;
     this.authorizer = args.authorizer;
@@ -69,28 +75,20 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
     const { request, operation } = input;
     let credentials : Credentials;
     try{
-      credentials = await new VpChecker().handleSafe(request);
+      credentials = await this.vpChecker.handleSafe(request);
     }catch(error: unknown){
-      //this.logger.verbose(`Authorization failed: ${(error as any).message}`);
       this.logger.info(`Authorization failed: ${(error as any).message}`);
       throw error;
     }
 
-    //this.logger.verbose(`Extracted credentials: ${JSON.stringify(credentials)}`);
     this.logger.info(`Extracted credentials: ${JSON.stringify(credentials)}`);
 
     const requestedModes = await this.modesExtractor.handleSafe(operation);
-    // this.logger.verbose(`Retrieved required modes: ${
-    //   [ ...requestedModes.entrySets() ].map(([ id, set ]): string => `{ ${id.path}: ${[ ...set ]} }`)
-    // }`);
     this.logger.info(`Retrieved required modes: ${
       [ ...requestedModes.entrySets() ].map(([ id, set ]): string => `{ ${id.path}: ${[ ...set ]} }`)
     }`);
 
     const availablePermissions = await this.permissionReader.handleSafe({ credentials, requestedModes });
-    // this.logger.verbose(`Available permissions are ${
-    //   [ ...availablePermissions.entries() ].map(([ id, map ]): string => `{ ${id.path}: ${JSON.stringify(map)} }`)
-    // }`);
     this.logger.info(`Available permissions are ${
       [ ...availablePermissions.entries() ].map(([ id, map ]): string => `{ ${id.path}: ${JSON.stringify(map)} }`)
     }`);
@@ -98,12 +96,10 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
     try {
       await this.authorizer.handleSafe({ credentials, requestedModes, availablePermissions });
     } catch (error: unknown) {
-      //this.logger.verbose(`Authorization failed: ${(error as any).message}`);
       this.logger.info(`Authorization failed: ${(error as any).message}`);
       throw error;
     }
 
-    //this.logger.verbose(`Authorization succeeded, calling source handler`);
     this.logger.info(`Authorization succeeded, calling source handler`);
 
     return this.operationHandler.handleSafe(input);
@@ -132,6 +128,10 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
 
     //return true if any permissions are available to this combination of user/app/issuer as this means there is a match
     return (Array.from(availablePermissions.values()).some((value) => value.read === true));
+  }
+  
+  public async extractNonceAndDomain(request: HttpRequest): Promise<any>{
+    return await this.vpChecker.extractNonceAndDomain(request);
   }
 
   //uses VcExtractor component to just extract credentials from the body of the request

@@ -14,8 +14,6 @@ import { BasicRepresentation } from '../http/representation/BasicRepresentation'
 import { VcAuthorizingHttpHandler } from './VcAuthorizingHttpHandler';
 import { readJsonStream } from '../util/StreamUtil';
 import { Operation } from '../http/Operation';
-import { Credentials } from '../authentication/Credentials';
-import { VpChecker } from '../authentication/VpChecker';
 
 export interface VcHttpHandlerArgs {
   /**
@@ -47,7 +45,7 @@ export interface VcHttpHandlerArgs {
 /**
  * Initial message:
  * 1) Request is received for a resource:
- *  -it has 'vc' in its header - indicating this will be vc based protocol
+ *  -it has 'VC' in its header - indicating this will be vc based protocol
  *  -body contains user and vc issuer
  * 2) Check acp policy for matching user and vc issuer, using call to checkAcr method on VcAuthorizingHttpHandler
  *  -generate nonce and domain, and save them in map
@@ -58,7 +56,7 @@ export interface VcHttpHandlerArgs {
  *  -check nonce and domain are valid compared with saved values
  *  -pass data to VcAuthorizingHttpHandler to try to authorize
  *    -VpChecker should be called from there to verify VP and extract issuer and user credentials from it
- *    -request should be authorized
+ *    -perform steps for it to be authorized
  */
 export class VcHttpHandler extends HttpHandler {
   private readonly logger = getLoggerFor(this);
@@ -69,7 +67,6 @@ export class VcHttpHandler extends HttpHandler {
 
   private readonly operationHandler: VcAuthorizingHttpHandler;
   private nonceDomainMap: Map<any, any>;//nonce: domain
-  private nonceCredentialsMap: Map<any, Credentials>;//keep track of nonces and the credentials of the user they were sent to. nonce:creds
 
   public constructor(args: VcHttpHandlerArgs) {
     super();
@@ -78,7 +75,6 @@ export class VcHttpHandler extends HttpHandler {
     this.responseWriter = args.responseWriter;
     this.operationHandler = args.operationHandler;
     this.nonceDomainMap = new Map<any, any>();
-    this.nonceCredentialsMap = new Map<any, any>();
   }
 
   public async handle({ request, response }: HttpHandlerInput): Promise<void> {
@@ -94,16 +90,16 @@ export class VcHttpHandler extends HttpHandler {
       result = await this.handleError(error, request);
     }
 
-      try {
-        result = await this.handleRequest(request, response, body);
-      } catch (error: unknown) {
-        result = await this.handleError(error, request);
-      }
+    try {
+      result = await this.handleRequest(request, response, body);
+    } catch (error: unknown) {
+      result = await this.handleError(error, request);
+    }
 
-      if (result) {
-        this.logger.info('Sending Response...');
-        return await this.responseWriter.handleSafe({ response, result });
-      }
+    if (result) {
+      this.logger.info('Sending Response...');
+      return await this.responseWriter.handleSafe({ response, result });
+    }
   }
 
   //This handler will only respond to requests that have:
@@ -134,12 +130,11 @@ export class VcHttpHandler extends HttpHandler {
       }else{
         throw new Error('Invalid user - app - issuer combination.');
       }
-      
       //handle if it is the secondary request - proceed with authorization checks to verify VP
     }else if(this.isSecondaryRequest(request)){
       this.logger.info('Detected Secondary Request');
       if(await this.validNonceAndDomain(request)){
-        return await this.handleSecondRequest(request, response, body);
+        return await this.handleSecondRequest(request, response);
       }else{
         throw new Error('Invalid Nonce and Domain.');
       }
@@ -164,7 +159,6 @@ export class VcHttpHandler extends HttpHandler {
     return result;
   }
 
-
   //checks ACP policy to see if user, app, issuer combination match requested resource's access rules
   public async validUserAppIssuer(request: HttpRequest, body: NodeJS.Dict<any>) : Promise<boolean>{
     //this should check acr file and it return true the permissions match
@@ -181,7 +175,7 @@ export class VcHttpHandler extends HttpHandler {
   //initial request will contain header with vc issuer, app, user
   public isInitialRequest(body: NodeJS.Dict<any>) : boolean{
     return (body['vcissuer'] !== undefined && 
-    //body['app'] !== undefined && 
+    body['app'] !== undefined && 
     body['user'] !== undefined);
   }
 
@@ -199,36 +193,27 @@ export class VcHttpHandler extends HttpHandler {
     //store nonce and domain in the map
     this.nonceDomainMap.set(nonce, uri);
 
-    //store credentials in another map, with nonce as a key for later use
-    let cred = await this.operationHandler.getCredentials(body);
-    this.nonceCredentialsMap.set(nonce, cred);
-    this.logger.info(`stored credentials: ${cred.agent}, ${cred.client}, ${cred.issuer}`);
-    this.logger.info(`credentials map.get(nonce): ${this.nonceCredentialsMap.get(nonce)}`);
     let result : ResponseDescription = new ResponseDescription(401);
 
     //TODO - proper way to generate VP Request
-    //https://w3c-ccg.github.io/vp-request-spec/#browser-credential-handler-api-chapi placeholder
+    //just a placeholder based on examples such as https://w3c-ccg.github.io/vp-request-spec/#browser-credential-handler-api-chapi
     let VPrequest = {
       "VerifiablePresentation": {
         "query": {
           "type": "QueryByExample",
           "credentialQuery": {
-            "reason": "We need you to prove your eligibility to work.",
+            "reason": "We need you to prove your eligibility.",
             "example": {
               "@context": [
                 "https://www.w3.org/2018/credentials/v1",
-                "https://w3id.org/citizenship/v1"
               ],
-              "type": "PermanentResidentCard"
+              "type": "BachelorDegree"
             }
           }
         },
         "challenge": nonce,
         "domain": uri
       },
-      "recommendedHandlerOrigins": [
-        "https://wallet.example"
-      ]
     };
     const representation = new BasicRepresentation(JSON.stringify(VPrequest), 'application/ld+json');
     result.data = representation.data;
@@ -239,11 +224,14 @@ export class VcHttpHandler extends HttpHandler {
    * VP checking code
    */
 
-  public async handleSecondRequest(request: HttpRequest, response: HttpResponse, body: NodeJS.Dict<any>): Promise<ResponseDescription>{
+  public async handleSecondRequest(request: HttpRequest, response: HttpResponse): Promise<ResponseDescription>{
     //verify VP
       const operation = await this.requestParser.handleSafe(request);
       try{
-        return this.operationHandler.handle({operation, request, response});
+        let result = this.operationHandler.handle({operation, request, response});
+        const {nonce} = await this.operationHandler.extractNonceAndDomain(request);
+        this.nonceDomainMap.delete(nonce);
+        return result;
       }catch(error: unknown){
         throw new Error('Verifiable Presentation could not be verified. Access denied.');
       }
@@ -251,8 +239,9 @@ export class VcHttpHandler extends HttpHandler {
 
   //if the nonce matches a saved nonce, check the domain also matches
   public async validNonceAndDomain(request: HttpRequest) : Promise<boolean>{
-    const {nonce, domain} = await new VpChecker().extractNonceAndDomain(request);
-    console.log(`VP: Nonce - ${nonce}, Domain: ${domain}`);
+    this.logger.info('Checking Nonce and Domain...')
+    const {nonce, domain} = await this.operationHandler.extractNonceAndDomain(request);
+    console.log(`VP Nonce: ${nonce}, Domain: ${domain}`);
     if(this.nonceDomainMap.has(nonce)){
       return domain === this.nonceDomainMap.get(nonce);
     }
