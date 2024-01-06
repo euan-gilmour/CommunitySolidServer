@@ -1,0 +1,26 @@
+# ACR for the test resource
+@prefix acl: <http://www.w3.org/ns/auth/acl#>.
+@prefix acp: <http://www.w3.org/ns/solid/acp#>.
+
+# The test resource should only be readable for agents that can prove the following credentials using a valid VC.
+# user: did:web:ben3101.solidcommunity.net
+# issuer: did:web:issuer123.solidcommunity.net
+# application: "my-demo-app"
+
+<#test-resource.txt>
+    a acp:AccessControlResource;
+    acp:resource <./test-resource.txt>;
+    acp:accessControl <#publicReadAccess>.
+
+<#publicReadAccess>
+    a acp:AccessControl;
+    acp:apply [
+        a acp:Policy;
+        acp:allow acl:Read;
+        acp:allOf [
+            a acp:Matcher;
+            acp:client "my-demo-app";
+            acp:issuer <did:web:issuer123.solidcommunity.net>;
+            acp:agent <did:web:ben3101.solidcommunity.net>;
+        ]
+    ].
