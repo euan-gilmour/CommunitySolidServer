@@ -195,24 +195,23 @@ export class VcHttpHandler extends HttpHandler {
 
     let result : ResponseDescription = new ResponseDescription(401);
 
-    //TODO - proper way to generate VP Request
-    //just a placeholder based on examples such as https://w3c-ccg.github.io/vp-request-spec/#browser-credential-handler-api-chapi
     let VPrequest = {
       "VerifiablePresentation": {
         "query": {
           "type": "QueryByExample",
           "credentialQuery": {
             "reason": "We need you to prove your eligibility.",
-            "example": {
-              "@context": [
-                "https://www.w3.org/2018/credentials/v1",
-              ],
-              "type": "BachelorDegree"
+            "credentialSubject":{
+              "id": body['user'],
+            },
+            "issuer":{
+              "id": body['vcissuer'],
             }
           }
         },
         "challenge": nonce,
-        "domain": uri
+        "domain": uri,
+        "appName": body['app']
       },
     };
     const representation = new BasicRepresentation(JSON.stringify(VPrequest), 'application/ld+json');
