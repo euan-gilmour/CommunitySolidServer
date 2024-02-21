@@ -47,8 +47,8 @@ export class VpChecker extends CredentialsExtractor {
     let VP = request.headers['vp']?.toString();
     if(VP){
       let payload = decodeJWT(VP).payload;
-      let nonce = payload.vp.nonce;
-      let domain = payload.vp.domain;
+      let nonce = payload.nonce;
+      let domain = payload.domain;
       //this.logger.info(`Nonce: ${nonce}, Domain: ${domain}`);
       return {nonce: nonce, domain: domain};
     }
@@ -66,6 +66,14 @@ export class VpChecker extends CredentialsExtractor {
     //console.log(verifiedVP)
     //check VP is valid
     const validVP = verifiedVP.verified;
+
+    //check expiry date of VP here because the library doesn't seem to do it properly.
+    let now = Math.ceil(Date.now()/1000);
+    if(verifiedVP.payload.exp !== undefined && verifiedVP.payload.exp < now){
+      this.logger.warn(`VP expired. Time now: ${now}, Expiry Date: ${verifiedVP.payload.exp}`);
+      throw new Error(`Error: VP has Expired`);
+    }
+
     this.logger.info('Verified? : '+validVP)
 
     if(!validVP){
@@ -88,8 +96,8 @@ export class VpChecker extends CredentialsExtractor {
 
     let clientId: any;
     let payload = decodeJWT(vpJwt).payload;
-    if(payload.vp.appName){
-      clientId = payload.vp.appName;
+    if(payload.appName){
+      clientId = payload.appName;
     }
     
     //the agent is the holder of the VP?

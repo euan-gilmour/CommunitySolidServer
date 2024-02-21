@@ -136,6 +136,7 @@ export class VcHttpHandler extends HttpHandler {
       if(await this.validNonceAndDomain(request)){
         return await this.handleSecondRequest(request, response);
       }else{
+        this.logger.info('Invalid Nonce and Domain');
         throw new Error('Invalid Nonce and Domain.');
       }
     }
