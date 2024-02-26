@@ -117,7 +117,7 @@ export class VcHttpHandler extends HttpHandler {
   /**
    * Interprets the request and generates a response description that can be used by the ResponseWriter to respond
    */
-  protected async handleRequest(request: HttpRequest, response: HttpResponse, body: NodeJS.Dict<any>):
+  public async handleRequest(request: HttpRequest, response: HttpResponse, body: NodeJS.Dict<any>):
   Promise<ResponseDescription> {
     const operation = await this.requestParser.handleSafe(request);
 

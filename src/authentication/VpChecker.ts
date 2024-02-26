@@ -1,8 +1,6 @@
 import { getLoggerFor } from '../logging/LogUtil';
 import type { HttpRequest } from '../server/HttpRequest';
 import { BadRequestHttpError } from '../util/errors/BadRequestHttpError';
-import { NotImplementedHttpError } from '../util/errors/NotImplementedHttpError';
-import { matchesAuthorizationScheme } from '../util/HeaderUtil';
 import type { Credentials } from './Credentials';
 import { CredentialsExtractor } from './CredentialsExtractor';
 import { Resolver } from 'did-resolver';
@@ -19,7 +17,7 @@ export class VpChecker extends CredentialsExtractor {
 
   public async canHandle({ headers }: HttpRequest): Promise<void> {
     if(headers['vp'] === undefined){
-      throw new NotImplementedHttpError('No VP header specified.');
+      throw new BadRequestHttpError('No VP header specified.');
     }
   }
 
@@ -47,8 +45,20 @@ export class VpChecker extends CredentialsExtractor {
     let VP = request.headers['vp']?.toString();
     if(VP){
       let payload = decodeJWT(VP).payload;
-      let nonce = payload.nonce;
-      let domain = payload.domain;
+      let nonce : any;
+      let domain : any;
+      try{
+        nonce = payload.nonce;
+      }catch(error: unknown){
+        const message = `Nonce missing from VP`;
+        this.logger.warn(message);
+      }
+      try{
+        domain = payload.domain;
+      }catch(error: unknown){
+        const message = `Domain missing from VP`;
+        this.logger.warn(message);
+      }
       //this.logger.info(`Nonce: ${nonce}, Domain: ${domain}`);
       return {nonce: nonce, domain: domain};
     }
@@ -71,14 +81,14 @@ export class VpChecker extends CredentialsExtractor {
     let now = Math.ceil(Date.now()/1000);
     if(verifiedVP.payload.exp !== undefined && verifiedVP.payload.exp < now){
       this.logger.warn(`VP expired. Time now: ${now}, Expiry Date: ${verifiedVP.payload.exp}`);
-      throw new Error(`Error: VP has Expired`);
+      throw new Error(`VP has expired`);
     }
 
     this.logger.info('Verified? : '+validVP)
 
     if(!validVP){
       this.logger.warn('Invalid VP');
-      throw new Error(`Error: Invalid VP`);
+      throw new Error(`Invalid VP`);
     }
     console.log(verifiedVP.payload);
 
@@ -90,7 +100,7 @@ export class VpChecker extends CredentialsExtractor {
     this.logger.info('Verified? : '+validVC);
     if(!validVC){
       this.logger.warn('Invalid VC');
-      throw new Error(`Error: Invalid VC`);
+      throw new Error(`Invalid VC`);
     }
     console.log(verifiedVC.payload);
 
