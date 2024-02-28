@@ -1,3 +1,4 @@
+import { BadRequestHttpError } from '../../../src';
 import type { RequestParser } from '../../../src/http/input/RequestParser';
 import type { Operation } from '../../../src/http/Operation';
 import { ErrorHandler } from '../../../src/http/output/error/ErrorHandler';
@@ -31,7 +32,9 @@ describe('A VcHttpHandler', (): void => {
 
     source = {
       handleSafe: jest.fn(),
-      checkAcr: jest.fn()
+      checkAcr: jest.fn(),
+      extractNonceAndDomain: jest.fn(),
+      handle: jest.fn()
     } as any;
 
     handler = new VcHttpHandler(
@@ -85,7 +88,7 @@ describe('A VcHttpHandler', (): void => {
         request.url = 'www.example.com/test-resource';
         let body =  {user: 'test_user',app: 'test_app',vcissuer: 'test_vcissuer'};
 
-        it('Determines that it is an initial request', async(): Promise<void> => {
+        it('determines that it is an initial request', async(): Promise<void> => {
             expect(handler.isInitialRequest(body)).toEqual(true);
         });
 
@@ -94,6 +97,7 @@ describe('A VcHttpHandler', (): void => {
             const result = handler.handleRequest(request, response, body);
             await expect(result).rejects.toThrow("Invalid user - app - issuer combination.");
         });
+
     });
 
     describe('when a request has a vc header and specifies correct user/app/issuer in the body', (): void => {
@@ -106,11 +110,11 @@ describe('A VcHttpHandler', (): void => {
         request.url = 'www.example.com/test-resource';
         let body =  {user: 'test_user',app: 'test_app',vcissuer: 'test_vcissuer'};
 
-        it('Determines that it is an initial request', async(): Promise<void> => {
+        it('determines that it is an initial request', async(): Promise<void> => {
             expect(handler.isInitialRequest(body)).toEqual(true);
         });
 
-        it('Responds with a 401 HTTP response and creates an appropriate VP Request', async(): Promise<void> => {
+        it('responds with a 401 HTTP response and creates an appropriate VP Request', async(): Promise<void> => {
             source.checkAcr.mockResolvedValue(true);
             let result: ResponseDescription = await handler.handleRequest(request, response, body);
             expect(result.statusCode).toEqual(401);
@@ -125,12 +129,100 @@ describe('A VcHttpHandler', (): void => {
             let usr = VPR.query.credentialQuery.credentialSubject.id;
             
             expect(nonce).toBeDefined();
+            expect(handler['nonceDomainMap'].get(nonce)).toEqual(domain);
             expect(appName).toEqual(body.app);
             expect(domain).toEqual(request.url);
             expect(iss).toEqual(body.vcissuer);
             expect(usr).toEqual(body.user);
         });
+
+        it('calls the responseWriter to return a response.', async(): Promise<void> => {
+            source.checkAcr.mockResolvedValue(true);
+            source.handle.mockResolvedValue(response);
+            await handler.handle({request, response});
+            expect(responseWriter.handleSafe).toHaveBeenCalledTimes(1);
+          });
     });
 
-    
+    /*Secondary Request*/
+    describe('when a secondary request does not contain a valid nonce', (): void => {
+        const request = {
+            method: 'GET',
+            headers: {
+                "vp": "testvpjwt"
+            },
+        } as any as HttpRequest;
+        request.url = 'www.example.com/test-resource';
+
+        it('determines that it is a secondary request', async(): Promise<void> => {
+            expect(handler.isSecondaryRequest(request)).toEqual(true);
+        });
+
+        it('detects that the nonce and domain are not valid, throws error', async(): Promise<void> => {
+            source.extractNonceAndDomain.mockResolvedValue({nonce: 'invalidnonce', domain: 'www.example.com/test-resource'});
+            const result = handler.handleRequest(request, response, body);
+            await expect(result).rejects.toThrow("Invalid Nonce and Domain.");
+        });
+    });
+
+    describe('when a secondary request does not contain a valid domain', (): void => {
+        const request = {
+            method: 'GET',
+            headers: {
+                "vp": "testvpjwt"
+            },
+        } as any as HttpRequest;
+        request.url = 'www.example.com/test-resource';
+
+        it('determines that it is a secondary request', async(): Promise<void> => {
+            expect(handler.isSecondaryRequest(request)).toEqual(true);
+        });
+
+        it('detects that the nonce and domain are not valid, throws error', async(): Promise<void> => {
+            source.extractNonceAndDomain.mockResolvedValue({nonce: 'validnonce', domain: 'differentdomain.com'});
+            handler['nonceDomainMap'].set('validnonce','www.example.com/test-resource');
+            const result = handler.handleRequest(request, response, body);
+            await expect(result).rejects.toThrow("Invalid Nonce and Domain.");
+        });
+    });
+
+    describe('when a secondary request does not contain a nonce or domain', (): void => {
+        const request = {
+            method: 'GET',
+            headers: {
+                "vp": "testvpjwt"
+            },
+        } as any as HttpRequest;
+        request.url = 'www.example.com/test-resource';
+
+        it('determines that it is a secondary request', async(): Promise<void> => {
+            expect(handler.isSecondaryRequest(request)).toEqual(true);
+        });
+
+        it('receives error instead of a nonce and domain, throws error', async(): Promise<void> => {
+            source.extractNonceAndDomain.mockRejectedValue(Error('Nonce missing from VP.'));
+            handler['nonceDomainMap'].set('validnonce','www.example.com/test-resource');
+            const result = handler.handleRequest(request, response, body);
+            await expect(result).rejects.toThrow("Nonce missing from VP.");
+        });
+    });
+
+    describe('when a secondary request does not contain a valid VP', (): void => {
+        const request = {
+            method: 'GET',
+            headers: {
+                "vp": "invalidvpjwt"
+            },
+        } as any as HttpRequest;
+        it('determines that it is a secondary request', async(): Promise<void> => {
+            expect(handler.isSecondaryRequest(request)).toEqual(true);
+        });
+
+        it('throws error after it cannot verify the VP', async(): Promise<void> => {
+            source.handle.mockRejectedValue(new BadRequestHttpError('Error verifying WebID via VP:'));
+            const result = handler.handleSecondRequest(request, response);
+            await expect(result).rejects.toThrow('Error verifying WebID via VP:');
+        });
+    });
+        
 });

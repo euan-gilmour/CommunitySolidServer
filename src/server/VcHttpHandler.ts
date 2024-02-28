@@ -134,7 +134,11 @@ export class VcHttpHandler extends HttpHandler {
     }else if(this.isSecondaryRequest(request)){
       this.logger.info('Detected Secondary Request');
       if(await this.validNonceAndDomain(request)){
-        return await this.handleSecondRequest(request, response);
+        try{
+          return await this.handleSecondRequest(request, response);
+        }catch(error){
+          throw error;
+        }
       }else{
         this.logger.info('Invalid Nonce and Domain');
         throw new Error('Invalid Nonce and Domain.');
@@ -228,12 +232,13 @@ export class VcHttpHandler extends HttpHandler {
     //verify VP
       const operation = await this.requestParser.handleSafe(request);
       try{
-        let result = this.operationHandler.handle({operation, request, response});
+        let result = await this.operationHandler.handle({operation, request, response});
         const {nonce} = await this.operationHandler.extractNonceAndDomain(request);
         this.nonceDomainMap.delete(nonce);
         return result;
       }catch(error: unknown){
-        throw new Error('Verifiable Presentation could not be verified. Access denied.');
+        //throw new Error('Verifiable Presentation could not be verified. Access denied.');
+        throw error;
       }
   }
 

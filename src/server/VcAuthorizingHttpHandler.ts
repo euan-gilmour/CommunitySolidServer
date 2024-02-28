@@ -75,7 +75,7 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
     const { request, operation } = input;
     let credentials : Credentials;
     try{
-      credentials = await this.vpChecker.handleSafe(request);
+      credentials = await this.vpChecker.handle(request);
     }catch(error: unknown){
       this.logger.info(`Authorization failed: ${(error as any).message}`);
       throw error;
@@ -105,11 +105,6 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
     return this.operationHandler.handleSafe(input);
   }
 
-  //force approve an authorized operation, for tests
-  public async approve(input: OperationHttpHandlerInput): Promise<ResponseDescription> {
-    return this.operationHandler.handleSafe(input);
-  }
-
   //check acr has appropriate combo for user, app, issuer
   //uses VcExtractor and just takes these values from body of initial request
   public async checkAcr(operation: Operation, body: NodeJS.Dict<any>): Promise<boolean>{
@@ -131,7 +126,13 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
   }
   
   public async extractNonceAndDomain(request: HttpRequest): Promise<any>{
-    return await this.vpChecker.extractNonceAndDomain(request);
+    let nonceAndDomain = {};
+    try{
+      nonceAndDomain = await this.vpChecker.extractNonceAndDomain(request);
+    }catch(error){
+      throw error;
+    }
+    return nonceAndDomain;
   }
 
   //uses VcExtractor component to just extract credentials from the body of the request

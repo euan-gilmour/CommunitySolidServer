@@ -201,11 +201,10 @@ describe('A VpChecker', (): void => {
     describe("on a VP that has not been signed with the holder's private key", (): void => {
         it('throws an error.', async(): Promise<void> => {
             const vc = await createVerifiableCredentialJwt(vcPayload, vcIssuer);
-            const WrongVpSignerKey = 'a17cb543a7fbf5493a9754c977826925a346964c5b292e9da31bb6940f698399';//last 2 chars replaced with 9s
-            const WrongVpSigner = ES256KSigner(hexToBytes(WrongVpSignerKey));
+            const WrongVpSigner = ES256KSigner(hexToBytes(VcIssuerKey)); //signs with issuer's key instead of holder
             const WrongHolder = {
-            did: userID,
-            signer: WrongVpSigner
+                did: userID,
+                signer: WrongVpSigner
             }
             const vpPayload = {
                 vp: {
