@@ -45,29 +45,14 @@ export class VpChecker extends CredentialsExtractor {
     let VP = request.headers['vp']?.toString();
     if(VP){
       try{
-      let payload = decodeJWT(VP).payload;
-      let nonce : any;
-      let domain : any;
-        try{
-          nonce = payload.nonce;
-        }catch(error: unknown){
-          const message = `Nonce missing from VP.`;
-          this.logger.warn(message);
-          throw new Error('Nonce missing from VP.');
-        }
-        try{
-          domain = payload.domain;
-        }catch(error: unknown){
-          const message = `Domain missing from VP.`;
-          this.logger.warn(message);
-          throw new Error('Domain missing from VP.');
-        }
-      //this.logger.info(`Nonce: ${nonce}, Domain: ${domain}`);
-      return {nonce: nonce, domain: domain};
+        let payload = decodeJWT(VP).payload;
+        let nonce = payload.nonce;
+        let domain = payload.domain;
+
+        return {nonce: nonce, domain: domain};
       }catch(error){
         throw new Error('Cannot decode VP JWT.');
       }
-
     }
   }
 
@@ -78,24 +63,19 @@ export class VpChecker extends CredentialsExtractor {
     const vpJwt: any = request.headers['vp'];
     const resolver = new Resolver(getResolver());
 
-    const verifiedVP = await verifyPresentation(vpJwt, resolver)
-    //console.log(verifiedVP)
-    //check VP is valid
-    const validVP = verifiedVP.verified;
-
-    //check expiry date of VP here because the library doesn't seem to do it properly.
+    //check expiry date of VP here because the library doesn't seem to always do it properly.
     let now = Math.ceil(Date.now()/1000);
-    if(verifiedVP.payload.exp !== undefined && verifiedVP.payload.exp < now){
-      this.logger.warn(`VP expired. Time now: ${now}, Expiry Date: ${verifiedVP.payload.exp}`);
+    let VpPayload = decodeJWT(vpJwt).payload;
+    if(VpPayload.exp !== undefined && VpPayload.exp < now){
+      this.logger.warn(`VP expired. Time now: ${now}, Expiry Date: ${VpPayload.exp}`);
       throw new Error(`VP has expired.`);
     }
 
+    const verifiedVP = await verifyPresentation(vpJwt, resolver);
+    //console.log(verifiedVP)
+    //check VP is valid
+    const validVP = verifiedVP.verified;
     this.logger.info('Verified? : '+validVP)
-
-    if(!validVP){
-      this.logger.warn('Invalid VP');
-      throw new Error(`Invalid VP.`);
-    }
     console.log(verifiedVP.payload);
 
     this.logger.info('Verifying VC...');
@@ -104,22 +84,14 @@ export class VpChecker extends CredentialsExtractor {
     const verifiedVC = await verifyCredential(vcJwt, resolver);
     const validVC = verifiedVC.verified;
     this.logger.info('Verified? : '+validVC);
-    if(!validVC){
-      this.logger.warn('Invalid VC');
-      throw new Error(`Invalid VC.`);
-    }
     console.log(verifiedVC.payload);
 
     let clientId: any;
-    let payload = decodeJWT(vpJwt).payload;
-    if(payload.appName){
-      clientId = payload.appName;
+    if(VpPayload.appName){
+      clientId = VpPayload.appName;
     }
     
-    //the agent is the holder of the VP?
-    //const webid = verifiedVP.verifiablePresentation.holder;
-
-    //the agent is the subject of the VC?
+    //the agent is the subject of the VC
     const webid: any = verifiedVC.payload.sub;
 
     //the issuer is the issuer of the VC

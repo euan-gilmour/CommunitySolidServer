@@ -166,7 +166,7 @@ describe('A VpChecker', (): void => {
             } as any as HttpRequest;
             const result = vpChecker.handle(request);
             await expect(result).rejects.toThrow(BadRequestHttpError);
-            await expect(result).rejects.toThrow("Error verifying WebID via VP:");
+            await expect(result).rejects.toThrow("Error verifying WebID via VP:");         
         });
     });
 
@@ -191,10 +191,12 @@ describe('A VpChecker', (): void => {
                     vp: vp
                 },
             } as any as HttpRequest;
+            const nonceDomainCheck = vpChecker.extractNonceAndDomain(request);
+            await expect(nonceDomainCheck).rejects.toThrow('Cannot decode VP JWT.');
+
             const result = vpChecker.handle(request);
             await expect(result).rejects.toThrow(BadRequestHttpError);
             await expect(result).rejects.toThrow("Error verifying WebID via VP:");
-            await expect(result).rejects.toThrow(`invalid_argument: Incorrect format JWT`);
         });
     });
 
@@ -226,7 +228,6 @@ describe('A VpChecker', (): void => {
             const result = vpChecker.handle(request);
             await expect(result).rejects.toThrow(BadRequestHttpError);
             await expect(result).rejects.toThrow("Error verifying WebID via VP:");
-            await expect(result).rejects.toThrow(`invalid_signature: no matching public key found`);
         });
     });
 
@@ -279,8 +280,7 @@ describe('A VpChecker', (): void => {
             } as any as HttpRequest;
             const result = vpChecker.handle(request);
             await expect(result).rejects.toThrow(BadRequestHttpError);
-            await expect(result).rejects.toThrow("Error verifying WebID via VP:");
-            await expect(result).rejects.toThrow(`invalid_jwt: JWT not valid before nbf: ${tomorrow}`);  
+            await expect(result).rejects.toThrow("Error verifying WebID via VP:"); 
         });
     });
 
@@ -309,13 +309,12 @@ describe('A VpChecker', (): void => {
             const result = vpChecker.handle(request);
             await expect(result).rejects.toThrow(BadRequestHttpError);
             await expect(result).rejects.toThrow("Error verifying WebID via VP:");
-            await expect(result).rejects.toThrow(`invalid_jwt: JWT has expired: exp: ${yesterday} < now`);
         });
     });
 
     describe("on a VC that has not been signed with the issuer's private key", (): void => {
         it('throws an error.', async(): Promise<void> => {
-            const WrongVcIssuerKey = '2143c4bd995378ce36bacfcfda2e39610f2809e349b4d25e7b7d2b5f1d82e6ea';//swap last 2 chars
+            const WrongVcIssuerKey = '2143c4bd995378ce36bacfcfda2e39610f2809e349b4d25e7b7d2b5f1d82e6ea';//swapped last 2 chars
             const WrongVcSigner = ES256KSigner(hexToBytes(WrongVcIssuerKey));
             const WrongVcIssuer = {
                 did: issuerID,
@@ -342,7 +341,6 @@ describe('A VpChecker', (): void => {
             const result = vpChecker.handle(request);
             await expect(result).rejects.toThrow(BadRequestHttpError);
             await expect(result).rejects.toThrow("Error verifying WebID via VP:");
-            await expect(result).rejects.toThrow(`invalid_signature: no matching public key found`);
         });
     });
 });

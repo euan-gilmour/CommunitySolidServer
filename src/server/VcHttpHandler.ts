@@ -79,12 +79,14 @@ export class VcHttpHandler extends HttpHandler {
 
   public async handle({ request, response }: HttpHandlerInput): Promise<void> {
     let result: ResponseDescription;
-    let body: NodeJS.Dict<any>;
+    let body: NodeJS.Dict<any> = {};
 
     //extract body from http request
     const operation = await this.requestParser.handleSafe(request);
     try{
-      body = await readJsonStream(operation.body.data);
+      if(operation.body.data !== undefined){
+        body = await readJsonStream(operation.body.data);
+      }
     }catch(error: unknown){
       body = {};
       result = await this.handleError(error, request);
@@ -106,23 +108,21 @@ export class VcHttpHandler extends HttpHandler {
   //-a 'vc' header (Initial Request)
   //-a 'vp' header (Secondary Request/Verifiable Presentation) 
   public async canHandle({ request, response }: HttpHandlerInput): Promise<void> {
-    if((request.headers['vc'] !== undefined) || 
-    (request.headers['vp'] !== undefined)){
-      return;
-    }else{
-      throw new Error("Required headers missing: 'VC' or 'VP'.");
+    if((request.headers['vc'] === undefined) && 
+    (request.headers['vp'] === undefined)){
+      throw new Error("Required headers missing: 'VC' or 'VP'.");      
     }
   }
 
   /**
    * Interprets the request and generates a response description that can be used by the ResponseWriter to respond
    */
-  public async handleRequest(request: HttpRequest, response: HttpResponse, body: NodeJS.Dict<any>):
+  public async handleRequest(request: HttpRequest, response: HttpResponse, body?: NodeJS.Dict<any>):
   Promise<ResponseDescription> {
     const operation = await this.requestParser.handleSafe(request);
 
     //handle if it is the initial request
-    if(this.isInitialRequest(body)){
+    if((request.headers['vc'] !== undefined) && body && (this.isInitialRequest(body))){
       this.logger.info('Detected Initial Request');
       //check the vc headers are valid for the requested resource
       if(await this.validUserAppIssuer(request, body)){
@@ -143,12 +143,9 @@ export class VcHttpHandler extends HttpHandler {
         this.logger.info('Invalid Nonce and Domain');
         throw new Error('Invalid Nonce and Domain.');
       }
+    }else{
+      throw new Error('Request not recognised');
     }
-
-    const result = await this.operationHandler.handleSafe({ operation, request, response });
-    //result gets returned and written into response outputted
-    this.logger.verbose(`Parsed ${operation.method} operation on ${operation.target.path}`);
-    return result;
   }
 
   /**
@@ -244,13 +241,20 @@ export class VcHttpHandler extends HttpHandler {
 
   //if the nonce matches a saved nonce, check the domain also matches
   public async validNonceAndDomain(request: HttpRequest) : Promise<boolean>{
-    this.logger.info('Checking Nonce and Domain...')
-    const {nonce, domain} = await this.operationHandler.extractNonceAndDomain(request);
-    console.log(`VP Nonce: ${nonce}, Domain: ${domain}`);
-    if(this.nonceDomainMap.has(nonce)){
-      return domain === this.nonceDomainMap.get(nonce);
+    this.logger.info('Checking Nonce and Domain...');
+    try{
+      const obj = await this.operationHandler.extractNonceAndDomain(request);
+      let nonce = obj.nonce;
+      let domain = obj.domain;
+      //console.log(`VP Nonce: ${nonce}, Domain: ${domain}`);
+      if(nonce !== undefined && this.nonceDomainMap.has(nonce)){
+        return domain === this.nonceDomainMap.get(nonce);
+      }else{
+        return false;
+      }
+    }catch(error){
+      return false;
     }
-    return false;
   }
 
 }
