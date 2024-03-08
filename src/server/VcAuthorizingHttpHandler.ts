@@ -13,7 +13,7 @@ import { OperationHttpHandler } from './OperationHttpHandler';
 
 export interface VcAuthorizingHttpHandlerArgs {
   /**
-   * Extracts the credentials from the body of the initial request of VC-based protocol.
+   * Extracts the Credentials from the body of the initial request of VC-based protocol.
    */
   credentialsExtractor: VcExtractor;
 
@@ -69,8 +69,8 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
     this.operationHandler = args.operationHandler;
   }
 
-  //uses the VpChecker component to verify the VP, extracts credentials from a valid VP
-  //checks the extracted credentials against the acr file for the requested resource
+  //Uses the VpChecker component to verify the VP, extracts credentials from a valid VP
+  //Checks the extracted credentials against the acr file for the requested resource
   public async handle(input: OperationHttpHandlerInput): Promise<ResponseDescription> {
     const { request, operation } = input;
     let credentials : Credentials;
@@ -80,7 +80,6 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
       this.logger.info(`Authorization failed: ${(error as any).message}`);
       throw error;
     }
-
     this.logger.info(`Extracted credentials: ${JSON.stringify(credentials)}`);
 
     const requestedModes = await this.modesExtractor.handleSafe(operation);
@@ -99,14 +98,12 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
       this.logger.info(`Authorization failed: ${(error as any).message}`);
       throw error;
     }
-
     this.logger.info(`Authorization succeeded, calling source handler`);
-
     return this.operationHandler.handleSafe(input);
   }
 
-  //check acr has appropriate combo for user, app, issuer
-  //uses VcExtractor and just takes these values from body of initial request
+  //Check acr has appropriate combo for user, app, issuer
+  //Uses VcExtractor and just takes these values from body of initial request
   public async checkAcr(operation: Operation, body: NodeJS.Dict<any>): Promise<boolean>{
     const credentials: Credentials = await this.credentialsExtractor.getCredentials(body);
     this.logger.info(`Extracted credentials: ${JSON.stringify(credentials)}`);
@@ -121,7 +118,7 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
       [ ...availablePermissions.entries() ].map(([ id, map ]): string => `{ ${id.path}: ${JSON.stringify(map)} }`)
     }`);
 
-    //return true if any permissions are available to this combination of user/app/issuer as this means there is a match
+    //Return true if any permissions are available to this combination of user/app/issuer as this means there is a match
     return (Array.from(availablePermissions.values()).some((value) => value.read === true));
   }
   
@@ -135,7 +132,6 @@ export class VcAuthorizingHttpHandler extends OperationHttpHandler {
     return nonceAndDomain;
   }
 
-  //uses VcExtractor component to just extract credentials from the body of the request
   public async getCredentials(body: NodeJS.Dict<any>) : Promise<Credentials>{
     return this.credentialsExtractor.getCredentials(body);
   }

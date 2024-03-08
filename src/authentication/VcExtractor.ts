@@ -1,5 +1,4 @@
 import { getLoggerFor } from '../logging/LogUtil';
-import { BadRequestHttpError } from '../util/errors/BadRequestHttpError';
 import type { Credentials } from './Credentials';
 
 
@@ -10,7 +9,7 @@ export class VcExtractor {
   protected readonly logger = getLoggerFor(this);
 
   public constructor() {
-    //super();
+
   }
 
   public async getCredentials(body: NodeJS.Dict<any>): Promise<Credentials>{

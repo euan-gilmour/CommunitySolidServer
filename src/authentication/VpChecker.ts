@@ -22,8 +22,6 @@ export class VpChecker extends CredentialsExtractor {
   }
 
   public async handle(request: HttpRequest): Promise<Credentials> {
-    const { headers: { authorization }} = request;
-
     try {
       const { webid: webId, client_id: clientId, iss: issuer } = await this.verify(request);
       this.logger.info(`Verified credentials via VP. WebID: ${webId
@@ -41,14 +39,12 @@ export class VpChecker extends CredentialsExtractor {
   }
 
   public async extractNonceAndDomain(request: HttpRequest): Promise<any>{
-    //this.logger.info('Extracting nonce and domain...');
     let VP = request.headers['vp']?.toString();
     if(VP){
       try{
         let payload = decodeJWT(VP).payload;
         let nonce = payload.nonce;
         let domain = payload.domain;
-
         return {nonce: nonce, domain: domain};
       }catch(error){
         throw new Error('Cannot decode VP JWT.');
@@ -56,14 +52,14 @@ export class VpChecker extends CredentialsExtractor {
     }
   }
 
-  //verify the vp - should be received as a jwt contained within the header
-  //if valid, extract the issuer and user and return as credentials. Else throw error
+  //Verify the vp - should be received as a jwt contained within the header
+  //If valid, extract the issuer and user and return as credentials. Else throw error
   public async verify(request: HttpRequest){
     this.logger.info('Verifying VP...');
     const vpJwt: any = request.headers['vp'];
     const resolver = new Resolver(getResolver());
 
-    //check expiry date of VP here because the library doesn't seem to always do it properly.
+    //Check expiry date of VP
     let now = Math.ceil(Date.now()/1000);
     let VpPayload = decodeJWT(vpJwt).payload;
     if(VpPayload.exp !== undefined && VpPayload.exp < now){
@@ -72,14 +68,13 @@ export class VpChecker extends CredentialsExtractor {
     }
 
     const verifiedVP = await verifyPresentation(vpJwt, resolver);
-    //console.log(verifiedVP)
-    //check VP is valid
+    //Check VP is valid
     const validVP = verifiedVP.verified;
     this.logger.info('Verified? : '+validVP)
     console.log(verifiedVP.payload);
 
     this.logger.info('Verifying VC...');
-    //extract the VC from the JWT VP payload and check it is valid
+    //Extract the VC from the JWT VP payload and check it is valid
     const vcJwt = verifiedVP.payload.vp.verifiableCredential[0];
     const verifiedVC = await verifyCredential(vcJwt, resolver);
     const validVC = verifiedVC.verified;
@@ -90,11 +85,9 @@ export class VpChecker extends CredentialsExtractor {
     if(VpPayload.appName){
       clientId = VpPayload.appName;
     }
-    
-    //the agent is the subject of the VC
+    //The agent is the subject of the VC
     const webid: any = verifiedVC.payload.sub;
-
-    //the issuer is the issuer of the VC
+    //The issuer is the issuer of the VC
     const iss: any = verifiedVC.payload.iss;
     return { webid: webid, client_id: clientId, iss: iss };
   }
