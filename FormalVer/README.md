@@ -1,9 +1,3 @@
----
-runme:
-  id: 01HSG4YD6587CJS2CAMFZ1MF3D
-  version: v3
----
-
 # VC-Based Solid Authentication Protocol with separation between Apps and Users
 
 The VC-Based Solid Authentication Protocol with separation between Apps and User: The issuance of the VC is done following traditional SSI protocol where users directly contact issuer for asking new credentials. The verification is slightly different since we put an application in the authentication loop in order to "delegate" the access. It is possible to check the output of our protocol [here](log/log.txt)
