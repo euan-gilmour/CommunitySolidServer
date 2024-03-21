@@ -1,23 +1,22 @@
+---
+runme:
+  id: 01HSG4YD6587CJS2CAMFZ1MF3D
+  version: v3
+---
 
-# VC-Based Third Party Authentication Protocol
+# VC-Based Solid Authentication Protocol with separation between Apps and Users
 
-The VC-based protocol is divided into two different parts: The issuance of the VC by the issuer and its use to access private resources in a pod. Both parts are divided by a fictive sovereignty line, depicting the breaking point at which the issuer loses sight of the users targeted pod, thus increasing their privacy. The handshake used in the model can be found [here](/sts).
+The VC-Based Solid Authentication Protocol with separation between Apps and User: The issuance of the VC is done following traditional SSI protocol where users directly contact issuer for asking new credentials. The verification is slightly different since we put an application in the authentication loop in order to "delegate" the access. It is possible to check the output of our protocol [here](log/log.txt)
 
-![MSC of ...](/msc/msc_vc_based.png)
+![MSC of ...](/FormalVer/msc/msc_https_verification_vc.png)
 
 # Results
 
 | Property  | Holds | Note |
 | ------------- | ------------- | ------------- |
-| Finish Issuer | Yes  | The issuer finishes the protocol. |
-| Finish User to Issuer | Yes  | The user finishes talking to the issuer. |
-| Finish User to Pod | Yes  | The user finishes talking to the pod. |
-| Finish Pod | Yes  | The pod finishes the protocol. |
-| Secret K_IU | Yes  | The established communication key K_IU between issuer and user remains secret. |
-| Secret K_UP | Yes  | The established communication key K_UP between user and pod remains secret. |
-| Authentication Issuer  | Yes  | The issuer is able to authenticate the user. |
-| Authentication User  | Yes  | The user is able to authenticate the issuer. |
-| Authentication User-All  | Yes  | The user authenticates non-injectively the issuer and pod.(1) |
-| Authentication Pod  | Yes  | The pod is able to authenticate the user. |
-
-Property (1) is working as expected as the same PT may be used multiple times in multiple sessions.
+| Secret rule_fromVerifier | Yes  | The Verifiable Presentation Request sent from the Verifier remains secret, cannot be produced if the user is not the real user. |
+| Secret vp_fromProver | Yes  | The Verifiable Presentation sent by the Prover (User) remains secret. |
+| Secret access_token_fromVerifier | Yes  | The token given to the App to access resources remains secret. |
+| Authentication Verifier  | Yes  | The app is able to authenticate the verifier. |
+| Authentication App  | Yes  | The verifier is able to authenticate the app. |
+| Authentication User  | Yes  | The app is able to authenticate the user. |
