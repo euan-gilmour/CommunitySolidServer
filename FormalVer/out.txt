@@ -1,0 +1,1397 @@
+File "https_verification_vc.pv", line 122, characters 42-43:
+Warning: identifier a' rebound.
+File "https_verification_vc.pv", line 183, characters 10-11:
+Warning: identifier u' rebound.
+File "https_verification_vc.pv", line 198, characters 27-28:
+Warning: identifier u' rebound.
+Process 0 (that is, the initial process):
+{1}new u: bitstring;
+{2}new a: bitstring;
+{3}new v: bitstring;
+{4}new i: bitstring;
+{5}out(c, u);
+{6}out(c, a);
+{7}out(c, v);
+{8}out(c, i);
+{9}new sku: SecretKey;
+{10}new ska: SecretKey;
+{11}new skv: SecretKey;
+{12}new ski: SecretKey;
+{13}out(c, pk(sku));
+{14}out(c, pk(ska));
+{15}out(c, pk(skv));
+{16}out(c, pk(ski));
+{17}let vc: bitstring = ((i,u),sig((i,u),ski)) in
+(
+    {18}!
+    {19}let c_1: channel = c in
+    {20}let u_1: bitstring = u in
+    {21}let sku_1: SecretKey = sku in
+    {22}let a_1: bitstring = a in
+    {23}let pka: PublicKey = pk(ska) in
+    {24}let v_1: bitstring = v in
+    {25}let pkv: PublicKey = pk(skv) in
+    {26}let uri_1: bitstring = uri in
+    {27}in(c_1, e: bitstring);
+    {28}in(c_1, e2: bitstring);
+    {29}in(c_1, pke1: PublicKey);
+    {30}in(c_1, pke2: PublicKey);
+    {31}in(c_1, euri: bitstring);
+    {32}if ((e = a_1) && (e2 = v_1)) then
+    (
+        {33}let talksOnlyToHonest: bool = true in
+        {34}new n_u: bitstring;
+        {35}new sk_su: SecretKey;
+        {36}let m_1: bitstring = aenc((tag1,n_u,pk(sk_su)),pka) in
+        {37}out(c_1, m_1);
+        {38}in(c_1, m_2: bitstring);
+        {39}let (tag2': bitstring,n_u': bitstring,n_d: bitstring,symk_ua: SymmetricKey) = adec(m_2,sk_su) in
+        {40}if (tag2 = tag2') then
+        {41}if (n_u = n_u') then
+        {42}let m_2_bis: bitstring = enc((tag2_bis,n_d,u_1),symk_ua) in
+        {43}out(c_1, m_2_bis);
+        {44}in(c_1, m_7: bitstring);
+        {45}let (tag7': bitstring,a': bitstring,v': bitstring,n_r: bitstring,vpr_body: bitstring) = dec(m_7,symk_ua) in
+        {46}if (a_1 = a') then
+        {47}if (v_1 = v') then
+        {48}if (tag7 = tag7') then
+        {49}let (n_c: bitstring,V: bitstring,vpr: bitstring) = vpr_body in
+        {50}let (usr': bitstring,uri': bitstring,a'_1: bitstring) = vpr in
+        {51}if ((uri',a'_1) = (uri_1,a_1)) then
+        {52}let vp: bitstring = ((n_c,vc,V,uri_1,a_1),sig((n_c,vc,V,uri_1,a_1),sku_1)) in
+        {53}let m'_8: bitstring = (tag8,u_1,n_r,vp) in
+        {54}let m_8: bitstring = enc(m'_8,symk_ua) in
+        {55}event auth_UserSendsLastMessageToApp(m_1,m_2,m_2_bis,m_7,m_8);
+        {56}out(c_1, m_8);
+        {57}if talksOnlyToHonest then
+        (
+            {58}event auth_UserCompletesProtocol(m_1,m_2,m_2_bis,m_7,m_8)
+        ) | (
+            {59}out(ch(vp), vp_fromProver)
+        )
+    )
+    else
+        {60}if (e2 = v_1) then
+        (
+            {61}let talksOnlyToHonest_1: bool = false in
+            {62}new n_u_1: bitstring;
+            {63}new sk_su_1: SecretKey;
+            {64}let m: bitstring = aenc((tag1,n_u_1,pk(sk_su_1)),pke1) in
+            {65}out(c_1, m);
+            {66}in(c_1, m_3: bitstring);
+            {67}let (tag2'_1: bitstring,n_u'_1: bitstring,n_d_1: bitstring,symk_ua_1: SymmetricKey) = adec(m_3,sk_su_1) in
+            {68}if (tag2 = tag2'_1) then
+            {69}if (n_u_1 = n_u'_1) then
+            {70}let m_2_bis_1: bitstring = enc((tag2_bis,n_d_1,u_1),symk_ua_1) in
+            {71}out(c_1, m_2_bis_1);
+            {72}in(c_1, m_4: bitstring);
+            {73}let (tag7'_1: bitstring,a'_2: bitstring,v'_1: bitstring,n_r_1: bitstring,vpr_body_1: bitstring) = dec(m_4,symk_ua_1) in
+            {74}if (e = a'_2) then
+            {75}if (v_1 = v'_1) then
+            {76}if (tag7 = tag7'_1) then
+            {77}let (n_c_1: bitstring,V_1: bitstring,vpr_1: bitstring) = vpr_body_1 in
+            {78}let (usr'_1: bitstring,uri'_1: bitstring,a'_3: bitstring) = vpr_1 in
+            {79}if ((uri'_1,a'_3) = (uri_1,e)) then
+            {80}let vp_1: bitstring = ((n_c_1,vc,V_1,uri_1,e),sig((n_c_1,vc,V_1,uri_1,e),sku_1)) in
+            {81}let m': bitstring = (tag8,u_1,n_r_1,vp_1) in
+            {82}let m_5: bitstring = enc(m',symk_ua_1) in
+            {83}event auth_UserSendsLastMessageToApp(m,m_3,m_2_bis_1,m_4,m_5);
+            {84}out(c_1, m_5);
+            {85}if talksOnlyToHonest_1 then
+            (
+                {86}event auth_UserCompletesProtocol(m,m_3,m_2_bis_1,m_4,m_5)
+            ) | (
+                {87}out(ch(vp_1), vp_fromProver)
+            )
+        )
+        else
+            {88}if (e = a_1) then
+            (
+                {89}let talksOnlyToHonest_2: bool = false in
+                {90}new n_u_2: bitstring;
+                {91}new sk_su_2: SecretKey;
+                {92}let m_6: bitstring = aenc((tag1,n_u_2,pk(sk_su_2)),pka) in
+                {93}out(c_1, m_6);
+                {94}in(c_1, m_9: bitstring);
+                {95}let (tag2'_2: bitstring,n_u'_2: bitstring,n_d_2: bitstring,symk_ua_2: SymmetricKey) = adec(m_9,sk_su_2) in
+                {96}if (tag2 = tag2'_2) then
+                {97}if (n_u_2 = n_u'_2) then
+                {98}let m_2_bis_2: bitstring = enc((tag2_bis,n_d_2,u_1),symk_ua_2) in
+                {99}out(c_1, m_2_bis_2);
+                {100}in(c_1, m_10: bitstring);
+                {101}let (tag7'_2: bitstring,a'_4: bitstring,v'_2: bitstring,n_r_2: bitstring,vpr_body_2: bitstring) = dec(m_10,symk_ua_2) in
+                {102}if (a_1 = a'_4) then
+                {103}if (e2 = v'_2) then
+                {104}if (tag7 = tag7'_2) then
+                {105}let (n_c_2: bitstring,V_2: bitstring,vpr_2: bitstring) = vpr_body_2 in
+                {106}let (usr'_2: bitstring,uri'_2: bitstring,a'_5: bitstring) = vpr_2 in
+                {107}if ((uri'_2,a'_5) = (euri,a_1)) then
+                {108}let vp_2: bitstring = ((n_c_2,vc,V_2,euri,a_1),sig((n_c_2,vc,V_2,euri,a_1),sku_1)) in
+                {109}let m'_1: bitstring = (tag8,u_1,n_r_2,vp_2) in
+                {110}let m_11: bitstring = enc(m'_1,symk_ua_2) in
+                {111}event auth_UserSendsLastMessageToApp(m_6,m_9,m_2_bis_2,m_10,m_11);
+                {112}out(c_1, m_11);
+                {113}if talksOnlyToHonest_2 then
+                (
+                    {114}event auth_UserCompletesProtocol(m_6,m_9,m_2_bis_2,m_10,m_11)
+                ) | (
+                    {115}out(ch(vp_2), vp_fromProver)
+                )
+            )
+            else
+                {116}let talksOnlyToHonest_3: bool = false in
+                {117}new n_u_3: bitstring;
+                {118}new sk_su_3: SecretKey;
+                {119}let m_12: bitstring = aenc((tag1,n_u_3,pk(sk_su_3)),pke1) in
+                {120}out(c_1, m_12);
+                {121}in(c_1, m_13: bitstring);
+                {122}let (tag2'_3: bitstring,n_u'_3: bitstring,n_d_3: bitstring,symk_ua_3: SymmetricKey) = adec(m_13,sk_su_3) in
+                {123}if (tag2 = tag2'_3) then
+                {124}if (n_u_3 = n_u'_3) then
+                {125}let m_2_bis_3: bitstring = enc((tag2_bis,n_d_3,u_1),symk_ua_3) in
+                {126}out(c_1, m_2_bis_3);
+                {127}in(c_1, m_14: bitstring);
+                {128}let (tag7'_3: bitstring,a'_6: bitstring,v'_3: bitstring,n_r_3: bitstring,vpr_body_3: bitstring) = dec(m_14,symk_ua_3) in
+                {129}if (e = a'_6) then
+                {130}if (e2 = v'_3) then
+                {131}if (tag7 = tag7'_3) then
+                {132}let (n_c_3: bitstring,V_3: bitstring,vpr_3: bitstring) = vpr_body_3 in
+                {133}let (usr'_3: bitstring,uri'_3: bitstring,a'_7: bitstring) = vpr_3 in
+                {134}if ((uri'_3,a'_7) = (euri,e)) then
+                {135}let vp_3: bitstring = ((n_c_3,vc,V_3,euri,e),sig((n_c_3,vc,V_3,euri,e),sku_1)) in
+                {136}let m'_2: bitstring = (tag8,u_1,n_r_3,vp_3) in
+                {137}let m_15: bitstring = enc(m'_2,symk_ua_3) in
+                {138}event auth_UserSendsLastMessageToApp(m_12,m_13,m_2_bis_3,m_14,m_15);
+                {139}out(c_1, m_15);
+                {140}if talksOnlyToHonest_3 then
+                (
+                    {141}event auth_UserCompletesProtocol(m_12,m_13,m_2_bis_3,m_14,m_15)
+                ) | (
+                    {142}out(ch(vp_3), vp_fromProver)
+                )
+) | (
+    {143}!
+    {144}let c_2: channel = c in
+    {145}let a_2: bitstring = a in
+    {146}let ska_1: SecretKey = ska in
+    {147}let u_2: bitstring = u in
+    {148}let pku: PublicKey = pk(sku) in
+    {149}let v_2: bitstring = v in
+    {150}let pkv_1: PublicKey = pk(skv) in
+    {151}let uri_2: bitstring = uri in
+    {152}in(c_2, e_1: bitstring);
+    {153}in(c_2, e2_1: bitstring);
+    {154}in(c_2, pke1_1: PublicKey);
+    {155}in(c_2, pke2_1: PublicKey);
+    {156}in(c_2, euri_1: bitstring);
+    {157}if ((e_1 = u_2) && (e2_1 = v_2)) then
+    (
+        {158}let talksOnlyToHonest_4: bool = true in
+        {159}in(c_2, m_16: bitstring);
+        {160}let (tag1': bitstring,n_u_4: bitstring,pk_su: PublicKey) = adec(m_16,ska_1) in
+        {161}if (tag1 = tag1') then
+        {162}new symk_ua_4: SymmetricKey;
+        {163}new n_d_4: bitstring;
+        {164}let m_17: bitstring = aenc((tag2,n_u_4,n_d_4,symk_ua_4),pk_su) in
+        {165}out(c_2, m_17);
+        {166}in(c_2, m_2_bis_4: bitstring);
+        {167}let (tag2_bis': bitstring,n_d': bitstring,u': bitstring) = dec(m_2_bis_4,symk_ua_4) in
+        {168}if (tag2_bis' = tag2_bis) then
+        {169}if (n_d' = n_d_4) then
+        {170}new n_a: bitstring;
+        {171}new sk_sa: SecretKey;
+        {172}let m_18: bitstring = aenc((tag3,n_a,pk(sk_sa)),pkv_1) in
+        {173}out(c_2, m_18);
+        {174}in(c_2, m_19: bitstring);
+        {175}let (tag4': bitstring,n_a': bitstring,n_b: bitstring,symk_av: SymmetricKey) = adec(m_19,sk_sa) in
+        {176}if (tag4' = tag4) then
+        {177}if (n_a = n_a') then
+        {178}let m_20: bitstring = enc((tag5,n_b,u_2,a_2,uri_2),symk_av) in
+        {179}out(c_2, m_20);
+        {180}in(c_2, m_21: bitstring);
+        {181}let (tag6': bitstring,v'_4: bitstring,vpr_signed: bitstring) = dec(m_21,symk_av) in
+        {182}if (tag6 = tag6') then
+        {183}let (n_c_4: bitstring,V_4: bitstring,vpr_4: bitstring) = vpr_signed in
+        {184}let (u'_1: bitstring,uri'_4: bitstring,a'_8: bitstring) = vpr_4 in
+        {185}if ((u'_1 = u_2) && ((uri'_4 = uri_2) && ((a'_8 = a_2) && (v'_4 = v_2)))) then
+        {186}new n_r_4: bitstring;
+        {187}let m_22: bitstring = enc((tag7,a_2,v_2,n_r_4,vpr_signed),symk_ua_4) in
+        {188}event auth_AppSendsLastMessageToUser(m_16,m_17,m_2_bis_4,m_18,m_19,m_20,m_21,m_22);
+        {189}out(c_2, m_22);
+        {190}in(c_2, m_23: bitstring);
+        {191}let (tag8': bitstring,u'_2: bitstring,n_r': bitstring,vp_signed: bitstring) = dec(m_23,symk_ua_4) in
+        {192}if (tag8 = tag8') then
+        {193}if (u_2 = u'_2) then
+        {194}if (n_r' = n_r_4) then
+        {195}let (vp_4: bitstring,sign_on_vp: bitstring) = vp_signed in
+        {196}if check(vp_4,sign_on_vp,pku) then
+        {197}if talksOnlyToHonest_4 then
+        {198}event auth_AppCompletesProtocolWithUser(m_16,m_17,m_2_bis_4,m_18,m_19,m_20,m_21,m_22,m_23);
+        {199}let m_24: bitstring = enc((tag9,vp_signed),symk_av) in
+        {200}event auth_AppSendsLastMessageToVerifier(m_16,m_17,m_2_bis_4,m_18,m_19,m_20,m_21,m_22,m_23,m_24);
+        {201}out(c_2, m_24);
+        {202}in(c_2, m_25: bitstring);
+        {203}let (tag10': bitstring,tkn_access: bitstring,sign_tkn: bitstring) = dec(m_25,symk_av) in
+        {204}if (tag10' = tag10) then
+        {205}out(ch((tkn_access,sig(tkn_access,ska_1))), access_token_fromApp);
+        {206}if talksOnlyToHonest_4 then
+        {207}event auth_AppCompletesProtocol(m_16,m_17,m_2_bis_4,m_18,m_19,m_20,m_21,m_22,m_23,m_24,m_25)
+    )
+    else
+        {208}if (e2_1 = v_2) then
+        (
+            {209}let talksOnlyToHonest_5: bool = false in
+            {210}in(c_2, m_26: bitstring);
+            {211}let (tag1'_1: bitstring,n_u_5: bitstring,pk_su_1: PublicKey) = adec(m_26,ska_1) in
+            {212}if (tag1 = tag1'_1) then
+            {213}new symk_ua_5: SymmetricKey;
+            {214}new n_d_5: bitstring;
+            {215}let m_27: bitstring = aenc((tag2,n_u_5,n_d_5,symk_ua_5),pk_su_1) in
+            {216}out(c_2, m_27);
+            {217}in(c_2, m_2_bis_5: bitstring);
+            {218}let (tag2_bis'_1: bitstring,n_d'_1: bitstring,u'_3: bitstring) = dec(m_2_bis_5,symk_ua_5) in
+            {219}if (tag2_bis'_1 = tag2_bis) then
+            {220}if (n_d'_1 = n_d_5) then
+            {221}new n_a_1: bitstring;
+            {222}new sk_sa_1: SecretKey;
+            {223}let m_28: bitstring = aenc((tag3,n_a_1,pk(sk_sa_1)),pkv_1) in
+            {224}out(c_2, m_28);
+            {225}in(c_2, m_29: bitstring);
+            {226}let (tag4'_1: bitstring,n_a'_1: bitstring,n_b_1: bitstring,symk_av_1: SymmetricKey) = adec(m_29,sk_sa_1) in
+            {227}if (tag4'_1 = tag4) then
+            {228}if (n_a_1 = n_a'_1) then
+            {229}let m_30: bitstring = enc((tag5,n_b_1,e_1,a_2,uri_2),symk_av_1) in
+            {230}out(c_2, m_30);
+            {231}in(c_2, m_31: bitstring);
+            {232}let (tag6'_1: bitstring,v'_5: bitstring,vpr_signed_1: bitstring) = dec(m_31,symk_av_1) in
+            {233}if (tag6 = tag6'_1) then
+            {234}let (n_c_5: bitstring,V_5: bitstring,vpr_5: bitstring) = vpr_signed_1 in
+            {235}let (u'_4: bitstring,uri'_5: bitstring,a'_9: bitstring) = vpr_5 in
+            {236}if ((u'_4 = e_1) && ((uri'_5 = uri_2) && ((a'_9 = a_2) && (v'_5 = v_2)))) then
+            {237}new n_r_5: bitstring;
+            {238}let m_32: bitstring = enc((tag7,a_2,v_2,n_r_5,vpr_signed_1),symk_ua_5) in
+            {239}event auth_AppSendsLastMessageToUser(m_26,m_27,m_2_bis_5,m_28,m_29,m_30,m_31,m_32);
+            {240}out(c_2, m_32);
+            {241}in(c_2, m_33: bitstring);
+            {242}let (tag8'_1: bitstring,u'_5: bitstring,n_r'_1: bitstring,vp_signed_1: bitstring) = dec(m_33,symk_ua_5) in
+            {243}if (tag8 = tag8'_1) then
+            {244}if (e_1 = u'_5) then
+            {245}if (n_r'_1 = n_r_5) then
+            {246}let (vp_5: bitstring,sign_on_vp_1: bitstring) = vp_signed_1 in
+            {247}if check(vp_5,sign_on_vp_1,pke1_1) then
+            {248}if talksOnlyToHonest_5 then
+            {249}event auth_AppCompletesProtocolWithUser(m_26,m_27,m_2_bis_5,m_28,m_29,m_30,m_31,m_32,m_33);
+            {250}let m_34: bitstring = enc((tag9,vp_signed_1),symk_av_1) in
+            {251}event auth_AppSendsLastMessageToVerifier(m_26,m_27,m_2_bis_5,m_28,m_29,m_30,m_31,m_32,m_33,m_34);
+            {252}out(c_2, m_34);
+            {253}in(c_2, m_35: bitstring);
+            {254}let (tag10'_1: bitstring,tkn_access_1: bitstring,sign_tkn_1: bitstring) = dec(m_35,symk_av_1) in
+            {255}if (tag10'_1 = tag10) then
+            {256}out(ch((tkn_access_1,sig(tkn_access_1,ska_1))), access_token_fromApp);
+            {257}if talksOnlyToHonest_5 then
+            {258}event auth_AppCompletesProtocol(m_26,m_27,m_2_bis_5,m_28,m_29,m_30,m_31,m_32,m_33,m_34,m_35)
+        )
+        else
+            {259}if (e_1 = u_2) then
+            (
+                {260}let talksOnlyToHonest_6: bool = false in
+                {261}in(c_2, m_36: bitstring);
+                {262}let (tag1'_2: bitstring,n_u_6: bitstring,pk_su_2: PublicKey) = adec(m_36,ska_1) in
+                {263}if (tag1 = tag1'_2) then
+                {264}new symk_ua_6: SymmetricKey;
+                {265}new n_d_6: bitstring;
+                {266}let m_37: bitstring = aenc((tag2,n_u_6,n_d_6,symk_ua_6),pk_su_2) in
+                {267}out(c_2, m_37);
+                {268}in(c_2, m_2_bis_6: bitstring);
+                {269}let (tag2_bis'_2: bitstring,n_d'_2: bitstring,u'_6: bitstring) = dec(m_2_bis_6,symk_ua_6) in
+                {270}if (tag2_bis'_2 = tag2_bis) then
+                {271}if (n_d'_2 = n_d_6) then
+                {272}new n_a_2: bitstring;
+                {273}new sk_sa_2: SecretKey;
+                {274}let m_38: bitstring = aenc((tag3,n_a_2,pk(sk_sa_2)),pke2_1) in
+                {275}out(c_2, m_38);
+                {276}in(c_2, m_39: bitstring);
+                {277}let (tag4'_2: bitstring,n_a'_2: bitstring,n_b_2: bitstring,symk_av_2: SymmetricKey) = adec(m_39,sk_sa_2) in
+                {278}if (tag4'_2 = tag4) then
+                {279}if (n_a_2 = n_a'_2) then
+                {280}let m_40: bitstring = enc((tag5,n_b_2,u_2,a_2,euri_1),symk_av_2) in
+                {281}out(c_2, m_40);
+                {282}in(c_2, m_41: bitstring);
+                {283}let (tag6'_2: bitstring,v'_6: bitstring,vpr_signed_2: bitstring) = dec(m_41,symk_av_2) in
+                {284}if (tag6 = tag6'_2) then
+                {285}let (n_c_6: bitstring,V_6: bitstring,vpr_6: bitstring) = vpr_signed_2 in
+                {286}let (u'_7: bitstring,uri'_6: bitstring,a'_10: bitstring) = vpr_6 in
+                {287}if ((u'_7 = u_2) && ((uri'_6 = euri_1) && ((a'_10 = a_2) && (v'_6 = e2_1)))) then
+                {288}new n_r_6: bitstring;
+                {289}let m_42: bitstring = enc((tag7,a_2,e2_1,n_r_6,vpr_signed_2),symk_ua_6) in
+                {290}event auth_AppSendsLastMessageToUser(m_36,m_37,m_2_bis_6,m_38,m_39,m_40,m_41,m_42);
+                {291}out(c_2, m_42);
+                {292}in(c_2, m_43: bitstring);
+                {293}let (tag8'_2: bitstring,u'_8: bitstring,n_r'_2: bitstring,vp_signed_2: bitstring) = dec(m_43,symk_ua_6) in
+                {294}if (tag8 = tag8'_2) then
+                {295}if (u_2 = u'_8) then
+                {296}if (n_r'_2 = n_r_6) then
+                {297}let (vp_6: bitstring,sign_on_vp_2: bitstring) = vp_signed_2 in
+                {298}if check(vp_6,sign_on_vp_2,pku) then
+                {299}if talksOnlyToHonest_6 then
+                {300}event auth_AppCompletesProtocolWithUser(m_36,m_37,m_2_bis_6,m_38,m_39,m_40,m_41,m_42,m_43);
+                {301}let m_44: bitstring = enc((tag9,vp_signed_2),symk_av_2) in
+                {302}event auth_AppSendsLastMessageToVerifier(m_36,m_37,m_2_bis_6,m_38,m_39,m_40,m_41,m_42,m_43,m_44);
+                {303}out(c_2, m_44);
+                {304}in(c_2, m_45: bitstring);
+                {305}let (tag10'_2: bitstring,tkn_access_2: bitstring,sign_tkn_2: bitstring) = dec(m_45,symk_av_2) in
+                {306}if (tag10'_2 = tag10) then
+                {307}out(ch((tkn_access_2,sig(tkn_access_2,ska_1))), access_token_fromApp);
+                {308}if talksOnlyToHonest_6 then
+                {309}event auth_AppCompletesProtocol(m_36,m_37,m_2_bis_6,m_38,m_39,m_40,m_41,m_42,m_43,m_44,m_45)
+            )
+            else
+                {310}let talksOnlyToHonest_7: bool = false in
+                {311}in(c_2, m_46: bitstring);
+                {312}let (tag1'_3: bitstring,n_u_7: bitstring,pk_su_3: PublicKey) = adec(m_46,ska_1) in
+                {313}if (tag1 = tag1'_3) then
+                {314}new symk_ua_7: SymmetricKey;
+                {315}new n_d_7: bitstring;
+                {316}let m_47: bitstring = aenc((tag2,n_u_7,n_d_7,symk_ua_7),pk_su_3) in
+                {317}out(c_2, m_47);
+                {318}in(c_2, m_2_bis_7: bitstring);
+                {319}let (tag2_bis'_3: bitstring,n_d'_3: bitstring,u'_9: bitstring) = dec(m_2_bis_7,symk_ua_7) in
+                {320}if (tag2_bis'_3 = tag2_bis) then
+                {321}if (n_d'_3 = n_d_7) then
+                {322}new n_a_3: bitstring;
+                {323}new sk_sa_3: SecretKey;
+                {324}let m_48: bitstring = aenc((tag3,n_a_3,pk(sk_sa_3)),pke2_1) in
+                {325}out(c_2, m_48);
+                {326}in(c_2, m_49: bitstring);
+                {327}let (tag4'_3: bitstring,n_a'_3: bitstring,n_b_3: bitstring,symk_av_3: SymmetricKey) = adec(m_49,sk_sa_3) in
+                {328}if (tag4'_3 = tag4) then
+                {329}if (n_a_3 = n_a'_3) then
+                {330}let m_50: bitstring = enc((tag5,n_b_3,e_1,a_2,euri_1),symk_av_3) in
+                {331}out(c_2, m_50);
+                {332}in(c_2, m_51: bitstring);
+                {333}let (tag6'_3: bitstring,v'_7: bitstring,vpr_signed_3: bitstring) = dec(m_51,symk_av_3) in
+                {334}if (tag6 = tag6'_3) then
+                {335}let (n_c_7: bitstring,V_7: bitstring,vpr_7: bitstring) = vpr_signed_3 in
+                {336}let (u'_10: bitstring,uri'_7: bitstring,a'_11: bitstring) = vpr_7 in
+                {337}if ((u'_10 = e_1) && ((uri'_7 = euri_1) && ((a'_11 = a_2) && (v'_7 = e2_1)))) then
+                {338}new n_r_7: bitstring;
+                {339}let m_52: bitstring = enc((tag7,a_2,e2_1,n_r_7,vpr_signed_3),symk_ua_7) in
+                {340}event auth_AppSendsLastMessageToUser(m_46,m_47,m_2_bis_7,m_48,m_49,m_50,m_51,m_52);
+                {341}out(c_2, m_52);
+                {342}in(c_2, m_53: bitstring);
+                {343}let (tag8'_3: bitstring,u'_11: bitstring,n_r'_3: bitstring,vp_signed_3: bitstring) = dec(m_53,symk_ua_7) in
+                {344}if (tag8 = tag8'_3) then
+                {345}if (e_1 = u'_11) then
+                {346}if (n_r'_3 = n_r_7) then
+                {347}let (vp_7: bitstring,sign_on_vp_3: bitstring) = vp_signed_3 in
+                {348}if check(vp_7,sign_on_vp_3,pke1_1) then
+                {349}if talksOnlyToHonest_7 then
+                {350}event auth_AppCompletesProtocolWithUser(m_46,m_47,m_2_bis_7,m_48,m_49,m_50,m_51,m_52,m_53);
+                {351}let m_54: bitstring = enc((tag9,vp_signed_3),symk_av_3) in
+                {352}event auth_AppSendsLastMessageToVerifier(m_46,m_47,m_2_bis_7,m_48,m_49,m_50,m_51,m_52,m_53,m_54);
+                {353}out(c_2, m_54);
+                {354}in(c_2, m_55: bitstring);
+                {355}let (tag10'_3: bitstring,tkn_access_3: bitstring,sign_tkn_3: bitstring) = dec(m_55,symk_av_3) in
+                {356}if (tag10'_3 = tag10) then
+                {357}out(ch((tkn_access_3,sig(tkn_access_3,ska_1))), access_token_fromApp);
+                {358}if talksOnlyToHonest_7 then
+                {359}event auth_AppCompletesProtocol(m_46,m_47,m_2_bis_7,m_48,m_49,m_50,m_51,m_52,m_53,m_54,m_55)
+) | (
+    {360}!
+    {361}let c_3: channel = c in
+    {362}let v_3: bitstring = v in
+    {363}let skv_1: SecretKey = skv in
+    {364}let u_3: bitstring = u in
+    {365}let pku_1: PublicKey = pk(sku) in
+    {366}let a_3: bitstring = a in
+    {367}let pka_1: PublicKey = pk(ska) in
+    {368}let uri_3: bitstring = uri in
+    {369}in(c_3, e_2: bitstring);
+    {370}in(c_3, e2_2: bitstring);
+    {371}in(c_3, pke1_2: PublicKey);
+    {372}in(c_3, pke2_2: PublicKey);
+    {373}if ((e_2 = u_3) && (e2_2 = a_3)) then
+    (
+        {374}let talksOnlyToHonest_8: bool = true in
+        {375}in(c_3, m_56: bitstring);
+        {376}let (tag3': bitstring,n_a_4: bitstring,pk_sa: PublicKey) = adec(m_56,skv_1) in
+        {377}if (tag3' = tag3) then
+        {378}new symk_av_4: SymmetricKey;
+        {379}new n_b_4: bitstring;
+        {380}let m_57: bitstring = aenc((tag4,n_a_4,n_b_4,symk_av_4),pk_sa) in
+        {381}out(c_3, m_57);
+        {382}in(c_3, m_58: bitstring);
+        {383}let (tag5': bitstring,n_b': bitstring,u'_12: bitstring,a'_12: bitstring,uri'_8: bitstring) = dec(m_58,symk_av_4) in
+        {384}if (tag5 = tag5') then
+        {385}if ((n_b',u'_12,uri'_8,a'_12) = (n_b_4,u_3,uri_3,a_3)) then
+        {386}new n_c_8: bitstring;
+        {387}new V_8: bitstring;
+        {388}let vpr_8: bitstring = (u_3,uri_3,a_3) in
+        {389}let m'_6: bitstring = (n_c_8,V_8,vpr_8) in
+        {390}let m_59: bitstring = enc((tag6,v_3,m'_6),symk_av_4) in
+        {391}event verifierInConeOfUser(m_56,m_57,m_58,m_59);
+        {392}out(c_3, m_59);
+        {393}in(c_3, m_60: bitstring);
+        {394}let (tag9': bitstring,vp_signed_4: bitstring) = dec(m_60,symk_av_4) in
+        {395}if (tag9 = tag9') then
+        {396}let (vp_8: bitstring,sign_vp: bitstring) = vp_signed_4 in
+        {397}let (n_c': bitstring,vc_signed': bitstring,V': bitstring,uri'': bitstring,a'': bitstring) = vp_8 in
+        {398}let (vc_1: bitstring,sign_vc: bitstring) = vc_signed' in
+        {399}let (u'': bitstring,iss': bitstring) = vc_1 in
+        {400}if check(vp_signed_4,sign_vp,pku_1) then
+        {401}if ((n_c',u'',V',uri'',a'') = (n_c_8,u_3,V_8,uri_3,a_3)) then
+        {402}new tkn_access_4: bitstring;
+        {403}let m_61: bitstring = enc((tag10,tkn_access_4,sig(tkn_access_4,skv_1)),symk_av_4) in
+        {404}event auth_VerifierSendsLastMessageToApp(m_56,m_57,m_58,m_59,m_60,m_61);
+        {405}out(ch((tkn_access_4,sig(tkn_access_4,skv_1))), access_token_fromVerifier);
+        {406}if talksOnlyToHonest_8 then
+        (
+            {407}event auth_VerifierCompletesProtocol(m_56,m_57,m_58,m_59,m_60,m_61)
+        ) | (
+            {408}out(ch(vpr_8), rule_fromVerifier)
+        )
+    )
+    else
+        {409}if (e2_2 = a_3) then
+        (
+            {410}let talksOnlyToHonest_9: bool = false in
+            {411}in(c_3, m_62: bitstring);
+            {412}let (tag3'_1: bitstring,n_a_5: bitstring,pk_sa_1: PublicKey) = adec(m_62,skv_1) in
+            {413}if (tag3'_1 = tag3) then
+            {414}new symk_av_5: SymmetricKey;
+            {415}new n_b_5: bitstring;
+            {416}let m_63: bitstring = aenc((tag4,n_a_5,n_b_5,symk_av_5),pk_sa_1) in
+            {417}out(c_3, m_63);
+            {418}in(c_3, m_64: bitstring);
+            {419}let (tag5'_1: bitstring,n_b'_1: bitstring,u'_13: bitstring,a'_13: bitstring,uri'_9: bitstring) = dec(m_64,symk_av_5) in
+            {420}if (tag5 = tag5'_1) then
+            {421}if ((n_b'_1,u'_13,uri'_9,a'_13) = (n_b_5,e_2,uri_3,a_3)) then
+            {422}new n_c_9: bitstring;
+            {423}new V_9: bitstring;
+            {424}let vpr_9: bitstring = (e_2,uri_3,a_3) in
+            {425}let m'_3: bitstring = (n_c_9,V_9,vpr_9) in
+            {426}let m_65: bitstring = enc((tag6,v_3,m'_3),symk_av_5) in
+            {427}event verifierInConeOfUser(m_62,m_63,m_64,m_65);
+            {428}out(c_3, m_65);
+            {429}in(c_3, m_66: bitstring);
+            {430}let (tag9'_1: bitstring,vp_signed_5: bitstring) = dec(m_66,symk_av_5) in
+            {431}if (tag9 = tag9'_1) then
+            {432}let (vp_9: bitstring,sign_vp_1: bitstring) = vp_signed_5 in
+            {433}let (n_c'_1: bitstring,vc_signed'_1: bitstring,V'_1: bitstring,uri''_1: bitstring,a''_1: bitstring) = vp_9 in
+            {434}let (vc_2: bitstring,sign_vc_1: bitstring) = vc_signed'_1 in
+            {435}let (u''_1: bitstring,iss'_1: bitstring) = vc_2 in
+            {436}if check(vp_signed_5,sign_vp_1,pke1_2) then
+            {437}if ((n_c'_1,u''_1,V'_1,uri''_1,a''_1) = (n_c_9,e_2,V_9,uri_3,a_3)) then
+            {438}new tkn_access_5: bitstring;
+            {439}let m_67: bitstring = enc((tag10,tkn_access_5,sig(tkn_access_5,skv_1)),symk_av_5) in
+            {440}event auth_VerifierSendsLastMessageToApp(m_62,m_63,m_64,m_65,m_66,m_67);
+            {441}out(ch((tkn_access_5,sig(tkn_access_5,skv_1))), access_token_fromVerifier);
+            {442}if talksOnlyToHonest_9 then
+            (
+                {443}event auth_VerifierCompletesProtocol(m_62,m_63,m_64,m_65,m_66,m_67)
+            ) | (
+                {444}out(ch(vpr_9), rule_fromVerifier)
+            )
+        )
+        else
+            {445}if (e_2 = u_3) then
+            (
+                {446}let talksOnlyToHonest_10: bool = false in
+                {447}in(c_3, m_68: bitstring);
+                {448}let (tag3'_2: bitstring,n_a_6: bitstring,pk_sa_2: PublicKey) = adec(m_68,skv_1) in
+                {449}if (tag3'_2 = tag3) then
+                {450}new symk_av_6: SymmetricKey;
+                {451}new n_b_6: bitstring;
+                {452}let m_69: bitstring = aenc((tag4,n_a_6,n_b_6,symk_av_6),pk_sa_2) in
+                {453}out(c_3, m_69);
+                {454}in(c_3, m_70: bitstring);
+                {455}let (tag5'_2: bitstring,n_b'_2: bitstring,u'_14: bitstring,a'_14: bitstring,uri'_10: bitstring) = dec(m_70,symk_av_6) in
+                {456}if (tag5 = tag5'_2) then
+                {457}if ((n_b'_2,u'_14,uri'_10,a'_14) = (n_b_6,u_3,uri_3,e2_2)) then
+                {458}new n_c_10: bitstring;
+                {459}new V_10: bitstring;
+                {460}let vpr_10: bitstring = (u_3,uri_3,e2_2) in
+                {461}let m'_4: bitstring = (n_c_10,V_10,vpr_10) in
+                {462}let m_71: bitstring = enc((tag6,v_3,m'_4),symk_av_6) in
+                {463}event verifierInConeOfUser(m_68,m_69,m_70,m_71);
+                {464}out(c_3, m_71);
+                {465}in(c_3, m_72: bitstring);
+                {466}let (tag9'_2: bitstring,vp_signed_6: bitstring) = dec(m_72,symk_av_6) in
+                {467}if (tag9 = tag9'_2) then
+                {468}let (vp_10: bitstring,sign_vp_2: bitstring) = vp_signed_6 in
+                {469}let (n_c'_2: bitstring,vc_signed'_2: bitstring,V'_2: bitstring,uri''_2: bitstring,a''_2: bitstring) = vp_10 in
+                {470}let (vc_3: bitstring,sign_vc_2: bitstring) = vc_signed'_2 in
+                {471}let (u''_2: bitstring,iss'_2: bitstring) = vc_3 in
+                {472}if check(vp_signed_6,sign_vp_2,pku_1) then
+                {473}if ((n_c'_2,u''_2,V'_2,uri''_2,a''_2) = (n_c_10,u_3,V_10,uri_3,e2_2)) then
+                {474}new tkn_access_6: bitstring;
+                {475}let m_73: bitstring = enc((tag10,tkn_access_6,sig(tkn_access_6,skv_1)),symk_av_6) in
+                {476}event auth_VerifierSendsLastMessageToApp(m_68,m_69,m_70,m_71,m_72,m_73);
+                {477}out(ch((tkn_access_6,sig(tkn_access_6,skv_1))), access_token_fromVerifier);
+                {478}if talksOnlyToHonest_10 then
+                (
+                    {479}event auth_VerifierCompletesProtocol(m_68,m_69,m_70,m_71,m_72,m_73)
+                ) | (
+                    {480}out(ch(vpr_10), rule_fromVerifier)
+                )
+            )
+            else
+                {481}let talksOnlyToHonest_11: bool = false in
+                {482}in(c_3, m_74: bitstring);
+                {483}let (tag3'_3: bitstring,n_a_7: bitstring,pk_sa_3: PublicKey) = adec(m_74,skv_1) in
+                {484}if (tag3'_3 = tag3) then
+                {485}new symk_av_7: SymmetricKey;
+                {486}new n_b_7: bitstring;
+                {487}let m_75: bitstring = aenc((tag4,n_a_7,n_b_7,symk_av_7),pk_sa_3) in
+                {488}out(c_3, m_75);
+                {489}in(c_3, m_76: bitstring);
+                {490}let (tag5'_3: bitstring,n_b'_3: bitstring,u'_15: bitstring,a'_15: bitstring,uri'_11: bitstring) = dec(m_76,symk_av_7) in
+                {491}if (tag5 = tag5'_3) then
+                {492}if ((n_b'_3,u'_15,uri'_11,a'_15) = (n_b_7,e_2,uri_3,e2_2)) then
+                {493}new n_c_11: bitstring;
+                {494}new V_11: bitstring;
+                {495}let vpr_11: bitstring = (e_2,uri_3,e2_2) in
+                {496}let m'_5: bitstring = (n_c_11,V_11,vpr_11) in
+                {497}let m_77: bitstring = enc((tag6,v_3,m'_5),symk_av_7) in
+                {498}event verifierInConeOfUser(m_74,m_75,m_76,m_77);
+                {499}out(c_3, m_77);
+                {500}in(c_3, m_78: bitstring);
+                {501}let (tag9'_3: bitstring,vp_signed_7: bitstring) = dec(m_78,symk_av_7) in
+                {502}if (tag9 = tag9'_3) then
+                {503}let (vp_11: bitstring,sign_vp_3: bitstring) = vp_signed_7 in
+                {504}let (n_c'_3: bitstring,vc_signed'_3: bitstring,V'_3: bitstring,uri''_3: bitstring,a''_3: bitstring) = vp_11 in
+                {505}let (vc_4: bitstring,sign_vc_3: bitstring) = vc_signed'_3 in
+                {506}let (u''_3: bitstring,iss'_3: bitstring) = vc_4 in
+                {507}if check(vp_signed_7,sign_vp_3,pke1_2) then
+                {508}if ((n_c'_3,u''_3,V'_3,uri''_3,a''_3) = (n_c_11,e_2,V_11,uri_3,e2_2)) then
+                {509}new tkn_access_7: bitstring;
+                {510}let m_79: bitstring = enc((tag10,tkn_access_7,sig(tkn_access_7,skv_1)),symk_av_7) in
+                {511}event auth_VerifierSendsLastMessageToApp(m_74,m_75,m_76,m_77,m_78,m_79);
+                {512}out(ch((tkn_access_7,sig(tkn_access_7,skv_1))), access_token_fromVerifier);
+                {513}if talksOnlyToHonest_11 then
+                (
+                    {514}event auth_VerifierCompletesProtocol(m_74,m_75,m_76,m_77,m_78,m_79)
+                ) | (
+                    {515}out(ch(vpr_11), rule_fromVerifier)
+                )
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+{1}new u: bitstring;
+{2}new a: bitstring;
+{3}new v: bitstring;
+{4}new i: bitstring;
+{5}out(c, u);
+{6}out(c, a);
+{7}out(c, v);
+{8}out(c, i);
+{9}new sku: SecretKey;
+{10}new ska: SecretKey;
+{11}new skv: SecretKey;
+{12}new ski: SecretKey;
+{13}out(c, pk(sku));
+{14}out(c, pk(ska));
+{15}out(c, pk(skv));
+{16}out(c, pk(ski));
+(
+    {18}!
+    {19}let c_1: channel = c in
+    {27}in(c_1, e: bitstring);
+    {28}in(c_1, e2: bitstring);
+    {29}in(c_1, pke1: PublicKey);
+    {30}in(c_1, pke2: PublicKey);
+    {31}in(c_1, euri: bitstring);
+    {26}let uri_1: bitstring = uri in
+    {24}let v_1: bitstring = v in
+    {23}let pka: PublicKey = pk(ska) in
+    {22}let a_1: bitstring = a in
+    {21}let sku_1: SecretKey = sku in
+    {20}let u_1: bitstring = u in
+    {17}let vc: bitstring = ((i,u),sig((i,u),ski)) in
+    {32}if ((e = a_1) && (e2 = v_1)) then
+    (
+        {34}new n_u: bitstring;
+        {35}new sk_su: SecretKey;
+        {36}let m_1: bitstring = aenc((tag1,n_u,pk(sk_su)),pka) in
+        {37}out(c_1, m_1);
+        {38}in(c_1, m_2: bitstring);
+        {39}let (tag2': bitstring,n_u': bitstring,n_d: bitstring,symk_ua: SymmetricKey) = adec(m_2,sk_su) in
+        {40}if (tag2 = tag2') then
+        {41}if (n_u = n_u') then
+        {42}let m_2_bis: bitstring = enc((tag2_bis,n_d,u_1),symk_ua) in
+        {43}out(c_1, m_2_bis);
+        {44}in(c_1, m_7: bitstring);
+        {45}let (tag7': bitstring,a': bitstring,v': bitstring,n_r: bitstring,vpr_body: bitstring) = dec(m_7,symk_ua) in
+        {46}if (a_1 = a') then
+        {47}if (v_1 = v') then
+        {48}if (tag7 = tag7') then
+        {49}let (n_c: bitstring,V: bitstring,vpr: bitstring) = vpr_body in
+        {50}let (usr': bitstring,uri': bitstring,a'_1: bitstring) = vpr in
+        {51}if ((uri',a'_1) = (uri_1,a_1)) then
+        {52}let vp: bitstring = ((n_c,vc,V,uri_1,a_1),sig((n_c,vc,V,uri_1,a_1),sku_1)) in
+        {53}let m'_8: bitstring = (tag8,u_1,n_r,vp) in
+        {54}let m_8: bitstring = enc(m'_8,symk_ua) in
+        {55}event auth_UserSendsLastMessageToApp(m_1,m_2,m_2_bis,m_7,m_8);
+        {56}out(c_1, m_8);
+        {33}let talksOnlyToHonest: bool = true in
+        {57}if talksOnlyToHonest then
+        (
+            {58}event auth_UserCompletesProtocol(m_1,m_2,m_2_bis,m_7,m_8)
+        ) | (
+            {59}out(ch(vp), vp_fromProver)
+        )
+    )
+    else
+        {60}if (e2 = v_1) then
+        (
+            {62}new n_u_1: bitstring;
+            {63}new sk_su_1: SecretKey;
+            {64}let m: bitstring = aenc((tag1,n_u_1,pk(sk_su_1)),pke1) in
+            {65}out(c_1, m);
+            {66}in(c_1, m_3: bitstring);
+            {67}let (tag2'_1: bitstring,n_u'_1: bitstring,n_d_1: bitstring,symk_ua_1: SymmetricKey) = adec(m_3,sk_su_1) in
+            {68}if (tag2 = tag2'_1) then
+            {69}if (n_u_1 = n_u'_1) then
+            {70}let m_2_bis_1: bitstring = enc((tag2_bis,n_d_1,u_1),symk_ua_1) in
+            {71}out(c_1, m_2_bis_1);
+            {72}in(c_1, m_4: bitstring);
+            {73}let (tag7'_1: bitstring,a'_2: bitstring,v'_1: bitstring,n_r_1: bitstring,vpr_body_1: bitstring) = dec(m_4,symk_ua_1) in
+            {74}if (e = a'_2) then
+            {75}if (v_1 = v'_1) then
+            {76}if (tag7 = tag7'_1) then
+            {77}let (n_c_1: bitstring,V_1: bitstring,vpr_1: bitstring) = vpr_body_1 in
+            {78}let (usr'_1: bitstring,uri'_1: bitstring,a'_3: bitstring) = vpr_1 in
+            {79}if ((uri'_1,a'_3) = (uri_1,e)) then
+            {80}let vp_1: bitstring = ((n_c_1,vc,V_1,uri_1,e),sig((n_c_1,vc,V_1,uri_1,e),sku_1)) in
+            {81}let m': bitstring = (tag8,u_1,n_r_1,vp_1) in
+            {82}let m_5: bitstring = enc(m',symk_ua_1) in
+            {83}event auth_UserSendsLastMessageToApp(m,m_3,m_2_bis_1,m_4,m_5);
+            {84}out(c_1, m_5);
+            {61}let talksOnlyToHonest_1: bool = false in
+            {85}if talksOnlyToHonest_1 then
+            (
+                {86}event auth_UserCompletesProtocol(m,m_3,m_2_bis_1,m_4,m_5)
+            ) | (
+                {87}out(ch(vp_1), vp_fromProver)
+            )
+        )
+        else
+            {88}if (e = a_1) then
+            (
+                {90}new n_u_2: bitstring;
+                {91}new sk_su_2: SecretKey;
+                {92}let m_6: bitstring = aenc((tag1,n_u_2,pk(sk_su_2)),pka) in
+                {93}out(c_1, m_6);
+                {94}in(c_1, m_9: bitstring);
+                {95}let (tag2'_2: bitstring,n_u'_2: bitstring,n_d_2: bitstring,symk_ua_2: SymmetricKey) = adec(m_9,sk_su_2) in
+                {96}if (tag2 = tag2'_2) then
+                {97}if (n_u_2 = n_u'_2) then
+                {98}let m_2_bis_2: bitstring = enc((tag2_bis,n_d_2,u_1),symk_ua_2) in
+                {99}out(c_1, m_2_bis_2);
+                {100}in(c_1, m_10: bitstring);
+                {101}let (tag7'_2: bitstring,a'_4: bitstring,v'_2: bitstring,n_r_2: bitstring,vpr_body_2: bitstring) = dec(m_10,symk_ua_2) in
+                {102}if (a_1 = a'_4) then
+                {103}if (e2 = v'_2) then
+                {104}if (tag7 = tag7'_2) then
+                {105}let (n_c_2: bitstring,V_2: bitstring,vpr_2: bitstring) = vpr_body_2 in
+                {106}let (usr'_2: bitstring,uri'_2: bitstring,a'_5: bitstring) = vpr_2 in
+                {107}if ((uri'_2,a'_5) = (euri,a_1)) then
+                {108}let vp_2: bitstring = ((n_c_2,vc,V_2,euri,a_1),sig((n_c_2,vc,V_2,euri,a_1),sku_1)) in
+                {109}let m'_1: bitstring = (tag8,u_1,n_r_2,vp_2) in
+                {110}let m_11: bitstring = enc(m'_1,symk_ua_2) in
+                {111}event auth_UserSendsLastMessageToApp(m_6,m_9,m_2_bis_2,m_10,m_11);
+                {112}out(c_1, m_11);
+                {89}let talksOnlyToHonest_2: bool = false in
+                {113}if talksOnlyToHonest_2 then
+                (
+                    {114}event auth_UserCompletesProtocol(m_6,m_9,m_2_bis_2,m_10,m_11)
+                ) | (
+                    {115}out(ch(vp_2), vp_fromProver)
+                )
+            )
+            else
+                {117}new n_u_3: bitstring;
+                {118}new sk_su_3: SecretKey;
+                {119}let m_12: bitstring = aenc((tag1,n_u_3,pk(sk_su_3)),pke1) in
+                {120}out(c_1, m_12);
+                {121}in(c_1, m_13: bitstring);
+                {122}let (tag2'_3: bitstring,n_u'_3: bitstring,n_d_3: bitstring,symk_ua_3: SymmetricKey) = adec(m_13,sk_su_3) in
+                {123}if (tag2 = tag2'_3) then
+                {124}if (n_u_3 = n_u'_3) then
+                {125}let m_2_bis_3: bitstring = enc((tag2_bis,n_d_3,u_1),symk_ua_3) in
+                {126}out(c_1, m_2_bis_3);
+                {127}in(c_1, m_14: bitstring);
+                {128}let (tag7'_3: bitstring,a'_6: bitstring,v'_3: bitstring,n_r_3: bitstring,vpr_body_3: bitstring) = dec(m_14,symk_ua_3) in
+                {129}if (e = a'_6) then
+                {130}if (e2 = v'_3) then
+                {131}if (tag7 = tag7'_3) then
+                {132}let (n_c_3: bitstring,V_3: bitstring,vpr_3: bitstring) = vpr_body_3 in
+                {133}let (usr'_3: bitstring,uri'_3: bitstring,a'_7: bitstring) = vpr_3 in
+                {134}if ((uri'_3,a'_7) = (euri,e)) then
+                {135}let vp_3: bitstring = ((n_c_3,vc,V_3,euri,e),sig((n_c_3,vc,V_3,euri,e),sku_1)) in
+                {136}let m'_2: bitstring = (tag8,u_1,n_r_3,vp_3) in
+                {137}let m_15: bitstring = enc(m'_2,symk_ua_3) in
+                {138}event auth_UserSendsLastMessageToApp(m_12,m_13,m_2_bis_3,m_14,m_15);
+                {139}out(c_1, m_15);
+                {116}let talksOnlyToHonest_3: bool = false in
+                {140}if talksOnlyToHonest_3 then
+                (
+                    {141}event auth_UserCompletesProtocol(m_12,m_13,m_2_bis_3,m_14,m_15)
+                ) | (
+                    {142}out(ch(vp_3), vp_fromProver)
+                )
+) | (
+    {143}!
+    {144}let c_2: channel = c in
+    {152}in(c_2, e_1: bitstring);
+    {153}in(c_2, e2_1: bitstring);
+    {154}in(c_2, pke1_1: PublicKey);
+    {155}in(c_2, pke2_1: PublicKey);
+    {156}in(c_2, euri_1: bitstring);
+    {151}let uri_2: bitstring = uri in
+    {150}let pkv_1: PublicKey = pk(skv) in
+    {149}let v_2: bitstring = v in
+    {148}let pku: PublicKey = pk(sku) in
+    {147}let u_2: bitstring = u in
+    {146}let ska_1: SecretKey = ska in
+    {145}let a_2: bitstring = a in
+    {157}if ((e_1 = u_2) && (e2_1 = v_2)) then
+    (
+        {159}in(c_2, m_16: bitstring);
+        {160}let (tag1': bitstring,n_u_4: bitstring,pk_su: PublicKey) = adec(m_16,ska_1) in
+        {161}if (tag1 = tag1') then
+        {162}new symk_ua_4: SymmetricKey;
+        {163}new n_d_4: bitstring;
+        {164}let m_17: bitstring = aenc((tag2,n_u_4,n_d_4,symk_ua_4),pk_su) in
+        {165}out(c_2, m_17);
+        {166}in(c_2, m_2_bis_4: bitstring);
+        {167}let (tag2_bis': bitstring,n_d': bitstring,u': bitstring) = dec(m_2_bis_4,symk_ua_4) in
+        {168}if (tag2_bis' = tag2_bis) then
+        {169}if (n_d' = n_d_4) then
+        {170}new n_a: bitstring;
+        {171}new sk_sa: SecretKey;
+        {172}let m_18: bitstring = aenc((tag3,n_a,pk(sk_sa)),pkv_1) in
+        {173}out(c_2, m_18);
+        {174}in(c_2, m_19: bitstring);
+        {175}let (tag4': bitstring,n_a': bitstring,n_b: bitstring,symk_av: SymmetricKey) = adec(m_19,sk_sa) in
+        {176}if (tag4' = tag4) then
+        {177}if (n_a = n_a') then
+        {178}let m_20: bitstring = enc((tag5,n_b,u_2,a_2,uri_2),symk_av) in
+        {179}out(c_2, m_20);
+        {180}in(c_2, m_21: bitstring);
+        {181}let (tag6': bitstring,v'_4: bitstring,vpr_signed: bitstring) = dec(m_21,symk_av) in
+        {182}if (tag6 = tag6') then
+        {183}let (n_c_4: bitstring,V_4: bitstring,vpr_4: bitstring) = vpr_signed in
+        {184}let (u'_1: bitstring,uri'_4: bitstring,a'_8: bitstring) = vpr_4 in
+        {185}if ((u'_1 = u_2) && ((uri'_4 = uri_2) && ((a'_8 = a_2) && (v'_4 = v_2)))) then
+        {186}new n_r_4: bitstring;
+        {187}let m_22: bitstring = enc((tag7,a_2,v_2,n_r_4,vpr_signed),symk_ua_4) in
+        {188}event auth_AppSendsLastMessageToUser(m_16,m_17,m_2_bis_4,m_18,m_19,m_20,m_21,m_22);
+        {189}out(c_2, m_22);
+        {190}in(c_2, m_23: bitstring);
+        {191}let (tag8': bitstring,u'_2: bitstring,n_r': bitstring,vp_signed: bitstring) = dec(m_23,symk_ua_4) in
+        {192}if (tag8 = tag8') then
+        {193}if (u_2 = u'_2) then
+        {194}if (n_r' = n_r_4) then
+        {195}let (vp_4: bitstring,sign_on_vp: bitstring) = vp_signed in
+        {196}if check(vp_4,sign_on_vp,pku) then
+        {158}let talksOnlyToHonest_4: bool = true in
+        {197}if talksOnlyToHonest_4 then
+        {198}event auth_AppCompletesProtocolWithUser(m_16,m_17,m_2_bis_4,m_18,m_19,m_20,m_21,m_22,m_23);
+        {199}let m_24: bitstring = enc((tag9,vp_signed),symk_av) in
+        {200}event auth_AppSendsLastMessageToVerifier(m_16,m_17,m_2_bis_4,m_18,m_19,m_20,m_21,m_22,m_23,m_24);
+        {201}out(c_2, m_24);
+        {202}in(c_2, m_25: bitstring);
+        {203}let (tag10': bitstring,tkn_access: bitstring,sign_tkn: bitstring) = dec(m_25,symk_av) in
+        {204}if (tag10' = tag10) then
+        {205}out(ch((tkn_access,sig(tkn_access,ska_1))), access_token_fromApp);
+        {206}if talksOnlyToHonest_4 then
+        {207}event auth_AppCompletesProtocol(m_16,m_17,m_2_bis_4,m_18,m_19,m_20,m_21,m_22,m_23,m_24,m_25)
+    )
+    else
+        {208}if (e2_1 = v_2) then
+        (
+            {210}in(c_2, m_26: bitstring);
+            {211}let (tag1'_1: bitstring,n_u_5: bitstring,pk_su_1: PublicKey) = adec(m_26,ska_1) in
+            {212}if (tag1 = tag1'_1) then
+            {213}new symk_ua_5: SymmetricKey;
+            {214}new n_d_5: bitstring;
+            {215}let m_27: bitstring = aenc((tag2,n_u_5,n_d_5,symk_ua_5),pk_su_1) in
+            {216}out(c_2, m_27);
+            {217}in(c_2, m_2_bis_5: bitstring);
+            {218}let (tag2_bis'_1: bitstring,n_d'_1: bitstring,u'_3: bitstring) = dec(m_2_bis_5,symk_ua_5) in
+            {219}if (tag2_bis'_1 = tag2_bis) then
+            {220}if (n_d'_1 = n_d_5) then
+            {221}new n_a_1: bitstring;
+            {222}new sk_sa_1: SecretKey;
+            {223}let m_28: bitstring = aenc((tag3,n_a_1,pk(sk_sa_1)),pkv_1) in
+            {224}out(c_2, m_28);
+            {225}in(c_2, m_29: bitstring);
+            {226}let (tag4'_1: bitstring,n_a'_1: bitstring,n_b_1: bitstring,symk_av_1: SymmetricKey) = adec(m_29,sk_sa_1) in
+            {227}if (tag4'_1 = tag4) then
+            {228}if (n_a_1 = n_a'_1) then
+            {229}let m_30: bitstring = enc((tag5,n_b_1,e_1,a_2,uri_2),symk_av_1) in
+            {230}out(c_2, m_30);
+            {231}in(c_2, m_31: bitstring);
+            {232}let (tag6'_1: bitstring,v'_5: bitstring,vpr_signed_1: bitstring) = dec(m_31,symk_av_1) in
+            {233}if (tag6 = tag6'_1) then
+            {234}let (n_c_5: bitstring,V_5: bitstring,vpr_5: bitstring) = vpr_signed_1 in
+            {235}let (u'_4: bitstring,uri'_5: bitstring,a'_9: bitstring) = vpr_5 in
+            {236}if ((u'_4 = e_1) && ((uri'_5 = uri_2) && ((a'_9 = a_2) && (v'_5 = v_2)))) then
+            {237}new n_r_5: bitstring;
+            {238}let m_32: bitstring = enc((tag7,a_2,v_2,n_r_5,vpr_signed_1),symk_ua_5) in
+            {239}event auth_AppSendsLastMessageToUser(m_26,m_27,m_2_bis_5,m_28,m_29,m_30,m_31,m_32);
+            {240}out(c_2, m_32);
+            {241}in(c_2, m_33: bitstring);
+            {242}let (tag8'_1: bitstring,u'_5: bitstring,n_r'_1: bitstring,vp_signed_1: bitstring) = dec(m_33,symk_ua_5) in
+            {243}if (tag8 = tag8'_1) then
+            {244}if (e_1 = u'_5) then
+            {245}if (n_r'_1 = n_r_5) then
+            {246}let (vp_5: bitstring,sign_on_vp_1: bitstring) = vp_signed_1 in
+            {247}if check(vp_5,sign_on_vp_1,pke1_1) then
+            {209}let talksOnlyToHonest_5: bool = false in
+            {248}if talksOnlyToHonest_5 then
+            {249}event auth_AppCompletesProtocolWithUser(m_26,m_27,m_2_bis_5,m_28,m_29,m_30,m_31,m_32,m_33);
+            {250}let m_34: bitstring = enc((tag9,vp_signed_1),symk_av_1) in
+            {251}event auth_AppSendsLastMessageToVerifier(m_26,m_27,m_2_bis_5,m_28,m_29,m_30,m_31,m_32,m_33,m_34);
+            {252}out(c_2, m_34);
+            {253}in(c_2, m_35: bitstring);
+            {254}let (tag10'_1: bitstring,tkn_access_1: bitstring,sign_tkn_1: bitstring) = dec(m_35,symk_av_1) in
+            {255}if (tag10'_1 = tag10) then
+            {256}out(ch((tkn_access_1,sig(tkn_access_1,ska_1))), access_token_fromApp);
+            {257}if talksOnlyToHonest_5 then
+            {258}event auth_AppCompletesProtocol(m_26,m_27,m_2_bis_5,m_28,m_29,m_30,m_31,m_32,m_33,m_34,m_35)
+        )
+        else
+            {259}if (e_1 = u_2) then
+            (
+                {261}in(c_2, m_36: bitstring);
+                {262}let (tag1'_2: bitstring,n_u_6: bitstring,pk_su_2: PublicKey) = adec(m_36,ska_1) in
+                {263}if (tag1 = tag1'_2) then
+                {264}new symk_ua_6: SymmetricKey;
+                {265}new n_d_6: bitstring;
+                {266}let m_37: bitstring = aenc((tag2,n_u_6,n_d_6,symk_ua_6),pk_su_2) in
+                {267}out(c_2, m_37);
+                {268}in(c_2, m_2_bis_6: bitstring);
+                {269}let (tag2_bis'_2: bitstring,n_d'_2: bitstring,u'_6: bitstring) = dec(m_2_bis_6,symk_ua_6) in
+                {270}if (tag2_bis'_2 = tag2_bis) then
+                {271}if (n_d'_2 = n_d_6) then
+                {272}new n_a_2: bitstring;
+                {273}new sk_sa_2: SecretKey;
+                {274}let m_38: bitstring = aenc((tag3,n_a_2,pk(sk_sa_2)),pke2_1) in
+                {275}out(c_2, m_38);
+                {276}in(c_2, m_39: bitstring);
+                {277}let (tag4'_2: bitstring,n_a'_2: bitstring,n_b_2: bitstring,symk_av_2: SymmetricKey) = adec(m_39,sk_sa_2) in
+                {278}if (tag4'_2 = tag4) then
+                {279}if (n_a_2 = n_a'_2) then
+                {280}let m_40: bitstring = enc((tag5,n_b_2,u_2,a_2,euri_1),symk_av_2) in
+                {281}out(c_2, m_40);
+                {282}in(c_2, m_41: bitstring);
+                {283}let (tag6'_2: bitstring,v'_6: bitstring,vpr_signed_2: bitstring) = dec(m_41,symk_av_2) in
+                {284}if (tag6 = tag6'_2) then
+                {285}let (n_c_6: bitstring,V_6: bitstring,vpr_6: bitstring) = vpr_signed_2 in
+                {286}let (u'_7: bitstring,uri'_6: bitstring,a'_10: bitstring) = vpr_6 in
+                {287}if ((u'_7 = u_2) && ((uri'_6 = euri_1) && ((a'_10 = a_2) && (v'_6 = e2_1)))) then
+                {288}new n_r_6: bitstring;
+                {289}let m_42: bitstring = enc((tag7,a_2,e2_1,n_r_6,vpr_signed_2),symk_ua_6) in
+                {290}event auth_AppSendsLastMessageToUser(m_36,m_37,m_2_bis_6,m_38,m_39,m_40,m_41,m_42);
+                {291}out(c_2, m_42);
+                {292}in(c_2, m_43: bitstring);
+                {293}let (tag8'_2: bitstring,u'_8: bitstring,n_r'_2: bitstring,vp_signed_2: bitstring) = dec(m_43,symk_ua_6) in
+                {294}if (tag8 = tag8'_2) then
+                {295}if (u_2 = u'_8) then
+                {296}if (n_r'_2 = n_r_6) then
+                {297}let (vp_6: bitstring,sign_on_vp_2: bitstring) = vp_signed_2 in
+                {298}if check(vp_6,sign_on_vp_2,pku) then
+                {260}let talksOnlyToHonest_6: bool = false in
+                {299}if talksOnlyToHonest_6 then
+                {300}event auth_AppCompletesProtocolWithUser(m_36,m_37,m_2_bis_6,m_38,m_39,m_40,m_41,m_42,m_43);
+                {301}let m_44: bitstring = enc((tag9,vp_signed_2),symk_av_2) in
+                {302}event auth_AppSendsLastMessageToVerifier(m_36,m_37,m_2_bis_6,m_38,m_39,m_40,m_41,m_42,m_43,m_44);
+                {303}out(c_2, m_44);
+                {304}in(c_2, m_45: bitstring);
+                {305}let (tag10'_2: bitstring,tkn_access_2: bitstring,sign_tkn_2: bitstring) = dec(m_45,symk_av_2) in
+                {306}if (tag10'_2 = tag10) then
+                {307}out(ch((tkn_access_2,sig(tkn_access_2,ska_1))), access_token_fromApp);
+                {308}if talksOnlyToHonest_6 then
+                {309}event auth_AppCompletesProtocol(m_36,m_37,m_2_bis_6,m_38,m_39,m_40,m_41,m_42,m_43,m_44,m_45)
+            )
+            else
+                {311}in(c_2, m_46: bitstring);
+                {312}let (tag1'_3: bitstring,n_u_7: bitstring,pk_su_3: PublicKey) = adec(m_46,ska_1) in
+                {313}if (tag1 = tag1'_3) then
+                {314}new symk_ua_7: SymmetricKey;
+                {315}new n_d_7: bitstring;
+                {316}let m_47: bitstring = aenc((tag2,n_u_7,n_d_7,symk_ua_7),pk_su_3) in
+                {317}out(c_2, m_47);
+                {318}in(c_2, m_2_bis_7: bitstring);
+                {319}let (tag2_bis'_3: bitstring,n_d'_3: bitstring,u'_9: bitstring) = dec(m_2_bis_7,symk_ua_7) in
+                {320}if (tag2_bis'_3 = tag2_bis) then
+                {321}if (n_d'_3 = n_d_7) then
+                {322}new n_a_3: bitstring;
+                {323}new sk_sa_3: SecretKey;
+                {324}let m_48: bitstring = aenc((tag3,n_a_3,pk(sk_sa_3)),pke2_1) in
+                {325}out(c_2, m_48);
+                {326}in(c_2, m_49: bitstring);
+                {327}let (tag4'_3: bitstring,n_a'_3: bitstring,n_b_3: bitstring,symk_av_3: SymmetricKey) = adec(m_49,sk_sa_3) in
+                {328}if (tag4'_3 = tag4) then
+                {329}if (n_a_3 = n_a'_3) then
+                {330}let m_50: bitstring = enc((tag5,n_b_3,e_1,a_2,euri_1),symk_av_3) in
+                {331}out(c_2, m_50);
+                {332}in(c_2, m_51: bitstring);
+                {333}let (tag6'_3: bitstring,v'_7: bitstring,vpr_signed_3: bitstring) = dec(m_51,symk_av_3) in
+                {334}if (tag6 = tag6'_3) then
+                {335}let (n_c_7: bitstring,V_7: bitstring,vpr_7: bitstring) = vpr_signed_3 in
+                {336}let (u'_10: bitstring,uri'_7: bitstring,a'_11: bitstring) = vpr_7 in
+                {337}if ((u'_10 = e_1) && ((uri'_7 = euri_1) && ((a'_11 = a_2) && (v'_7 = e2_1)))) then
+                {338}new n_r_7: bitstring;
+                {339}let m_52: bitstring = enc((tag7,a_2,e2_1,n_r_7,vpr_signed_3),symk_ua_7) in
+                {340}event auth_AppSendsLastMessageToUser(m_46,m_47,m_2_bis_7,m_48,m_49,m_50,m_51,m_52);
+                {341}out(c_2, m_52);
+                {342}in(c_2, m_53: bitstring);
+                {343}let (tag8'_3: bitstring,u'_11: bitstring,n_r'_3: bitstring,vp_signed_3: bitstring) = dec(m_53,symk_ua_7) in
+                {344}if (tag8 = tag8'_3) then
+                {345}if (e_1 = u'_11) then
+                {346}if (n_r'_3 = n_r_7) then
+                {347}let (vp_7: bitstring,sign_on_vp_3: bitstring) = vp_signed_3 in
+                {348}if check(vp_7,sign_on_vp_3,pke1_1) then
+                {310}let talksOnlyToHonest_7: bool = false in
+                {349}if talksOnlyToHonest_7 then
+                {350}event auth_AppCompletesProtocolWithUser(m_46,m_47,m_2_bis_7,m_48,m_49,m_50,m_51,m_52,m_53);
+                {351}let m_54: bitstring = enc((tag9,vp_signed_3),symk_av_3) in
+                {352}event auth_AppSendsLastMessageToVerifier(m_46,m_47,m_2_bis_7,m_48,m_49,m_50,m_51,m_52,m_53,m_54);
+                {353}out(c_2, m_54);
+                {354}in(c_2, m_55: bitstring);
+                {355}let (tag10'_3: bitstring,tkn_access_3: bitstring,sign_tkn_3: bitstring) = dec(m_55,symk_av_3) in
+                {356}if (tag10'_3 = tag10) then
+                {357}out(ch((tkn_access_3,sig(tkn_access_3,ska_1))), access_token_fromApp);
+                {358}if talksOnlyToHonest_7 then
+                {359}event auth_AppCompletesProtocol(m_46,m_47,m_2_bis_7,m_48,m_49,m_50,m_51,m_52,m_53,m_54,m_55)
+) | (
+    {360}!
+    {361}let c_3: channel = c in
+    {369}in(c_3, e_2: bitstring);
+    {370}in(c_3, e2_2: bitstring);
+    {371}in(c_3, pke1_2: PublicKey);
+    {372}in(c_3, pke2_2: PublicKey);
+    {368}let uri_3: bitstring = uri in
+    {366}let a_3: bitstring = a in
+    {365}let pku_1: PublicKey = pk(sku) in
+    {364}let u_3: bitstring = u in
+    {363}let skv_1: SecretKey = skv in
+    {362}let v_3: bitstring = v in
+    {373}if ((e_2 = u_3) && (e2_2 = a_3)) then
+    (
+        {375}in(c_3, m_56: bitstring);
+        {376}let (tag3': bitstring,n_a_4: bitstring,pk_sa: PublicKey) = adec(m_56,skv_1) in
+        {377}if (tag3' = tag3) then
+        {378}new symk_av_4: SymmetricKey;
+        {379}new n_b_4: bitstring;
+        {380}let m_57: bitstring = aenc((tag4,n_a_4,n_b_4,symk_av_4),pk_sa) in
+        {381}out(c_3, m_57);
+        {382}in(c_3, m_58: bitstring);
+        {383}let (tag5': bitstring,n_b': bitstring,u'_12: bitstring,a'_12: bitstring,uri'_8: bitstring) = dec(m_58,symk_av_4) in
+        {384}if (tag5 = tag5') then
+        {385}if ((n_b',u'_12,uri'_8,a'_12) = (n_b_4,u_3,uri_3,a_3)) then
+        {386}new n_c_8: bitstring;
+        {387}new V_8: bitstring;
+        {388}let vpr_8: bitstring = (u_3,uri_3,a_3) in
+        {389}let m'_6: bitstring = (n_c_8,V_8,vpr_8) in
+        {390}let m_59: bitstring = enc((tag6,v_3,m'_6),symk_av_4) in
+        {391}event verifierInConeOfUser(m_56,m_57,m_58,m_59);
+        {392}out(c_3, m_59);
+        {393}in(c_3, m_60: bitstring);
+        {394}let (tag9': bitstring,vp_signed_4: bitstring) = dec(m_60,symk_av_4) in
+        {395}if (tag9 = tag9') then
+        {396}let (vp_8: bitstring,sign_vp: bitstring) = vp_signed_4 in
+        {397}let (n_c': bitstring,vc_signed': bitstring,V': bitstring,uri'': bitstring,a'': bitstring) = vp_8 in
+        {398}let (vc_1: bitstring,sign_vc: bitstring) = vc_signed' in
+        {399}let (u'': bitstring,iss': bitstring) = vc_1 in
+        {400}if check(vp_signed_4,sign_vp,pku_1) then
+        {401}if ((n_c',u'',V',uri'',a'') = (n_c_8,u_3,V_8,uri_3,a_3)) then
+        {402}new tkn_access_4: bitstring;
+        {403}let m_61: bitstring = enc((tag10,tkn_access_4,sig(tkn_access_4,skv_1)),symk_av_4) in
+        {404}event auth_VerifierSendsLastMessageToApp(m_56,m_57,m_58,m_59,m_60,m_61);
+        {405}out(ch((tkn_access_4,sig(tkn_access_4,skv_1))), access_token_fromVerifier);
+        {374}let talksOnlyToHonest_8: bool = true in
+        {406}if talksOnlyToHonest_8 then
+        (
+            {407}event auth_VerifierCompletesProtocol(m_56,m_57,m_58,m_59,m_60,m_61)
+        ) | (
+            {408}out(ch(vpr_8), rule_fromVerifier)
+        )
+    )
+    else
+        {409}if (e2_2 = a_3) then
+        (
+            {411}in(c_3, m_62: bitstring);
+            {412}let (tag3'_1: bitstring,n_a_5: bitstring,pk_sa_1: PublicKey) = adec(m_62,skv_1) in
+            {413}if (tag3'_1 = tag3) then
+            {414}new symk_av_5: SymmetricKey;
+            {415}new n_b_5: bitstring;
+            {416}let m_63: bitstring = aenc((tag4,n_a_5,n_b_5,symk_av_5),pk_sa_1) in
+            {417}out(c_3, m_63);
+            {418}in(c_3, m_64: bitstring);
+            {419}let (tag5'_1: bitstring,n_b'_1: bitstring,u'_13: bitstring,a'_13: bitstring,uri'_9: bitstring) = dec(m_64,symk_av_5) in
+            {420}if (tag5 = tag5'_1) then
+            {421}if ((n_b'_1,u'_13,uri'_9,a'_13) = (n_b_5,e_2,uri_3,a_3)) then
+            {422}new n_c_9: bitstring;
+            {423}new V_9: bitstring;
+            {424}let vpr_9: bitstring = (e_2,uri_3,a_3) in
+            {425}let m'_3: bitstring = (n_c_9,V_9,vpr_9) in
+            {426}let m_65: bitstring = enc((tag6,v_3,m'_3),symk_av_5) in
+            {427}event verifierInConeOfUser(m_62,m_63,m_64,m_65);
+            {428}out(c_3, m_65);
+            {429}in(c_3, m_66: bitstring);
+            {430}let (tag9'_1: bitstring,vp_signed_5: bitstring) = dec(m_66,symk_av_5) in
+            {431}if (tag9 = tag9'_1) then
+            {432}let (vp_9: bitstring,sign_vp_1: bitstring) = vp_signed_5 in
+            {433}let (n_c'_1: bitstring,vc_signed'_1: bitstring,V'_1: bitstring,uri''_1: bitstring,a''_1: bitstring) = vp_9 in
+            {434}let (vc_2: bitstring,sign_vc_1: bitstring) = vc_signed'_1 in
+            {435}let (u''_1: bitstring,iss'_1: bitstring) = vc_2 in
+            {436}if check(vp_signed_5,sign_vp_1,pke1_2) then
+            {437}if ((n_c'_1,u''_1,V'_1,uri''_1,a''_1) = (n_c_9,e_2,V_9,uri_3,a_3)) then
+            {438}new tkn_access_5: bitstring;
+            {439}let m_67: bitstring = enc((tag10,tkn_access_5,sig(tkn_access_5,skv_1)),symk_av_5) in
+            {440}event auth_VerifierSendsLastMessageToApp(m_62,m_63,m_64,m_65,m_66,m_67);
+            {441}out(ch((tkn_access_5,sig(tkn_access_5,skv_1))), access_token_fromVerifier);
+            {410}let talksOnlyToHonest_9: bool = false in
+            {442}if talksOnlyToHonest_9 then
+            (
+                {443}event auth_VerifierCompletesProtocol(m_62,m_63,m_64,m_65,m_66,m_67)
+            ) | (
+                {444}out(ch(vpr_9), rule_fromVerifier)
+            )
+        )
+        else
+            {445}if (e_2 = u_3) then
+            (
+                {447}in(c_3, m_68: bitstring);
+                {448}let (tag3'_2: bitstring,n_a_6: bitstring,pk_sa_2: PublicKey) = adec(m_68,skv_1) in
+                {449}if (tag3'_2 = tag3) then
+                {450}new symk_av_6: SymmetricKey;
+                {451}new n_b_6: bitstring;
+                {452}let m_69: bitstring = aenc((tag4,n_a_6,n_b_6,symk_av_6),pk_sa_2) in
+                {453}out(c_3, m_69);
+                {454}in(c_3, m_70: bitstring);
+                {455}let (tag5'_2: bitstring,n_b'_2: bitstring,u'_14: bitstring,a'_14: bitstring,uri'_10: bitstring) = dec(m_70,symk_av_6) in
+                {456}if (tag5 = tag5'_2) then
+                {457}if ((n_b'_2,u'_14,uri'_10,a'_14) = (n_b_6,u_3,uri_3,e2_2)) then
+                {458}new n_c_10: bitstring;
+                {459}new V_10: bitstring;
+                {460}let vpr_10: bitstring = (u_3,uri_3,e2_2) in
+                {461}let m'_4: bitstring = (n_c_10,V_10,vpr_10) in
+                {462}let m_71: bitstring = enc((tag6,v_3,m'_4),symk_av_6) in
+                {463}event verifierInConeOfUser(m_68,m_69,m_70,m_71);
+                {464}out(c_3, m_71);
+                {465}in(c_3, m_72: bitstring);
+                {466}let (tag9'_2: bitstring,vp_signed_6: bitstring) = dec(m_72,symk_av_6) in
+                {467}if (tag9 = tag9'_2) then
+                {468}let (vp_10: bitstring,sign_vp_2: bitstring) = vp_signed_6 in
+                {469}let (n_c'_2: bitstring,vc_signed'_2: bitstring,V'_2: bitstring,uri''_2: bitstring,a''_2: bitstring) = vp_10 in
+                {470}let (vc_3: bitstring,sign_vc_2: bitstring) = vc_signed'_2 in
+                {471}let (u''_2: bitstring,iss'_2: bitstring) = vc_3 in
+                {472}if check(vp_signed_6,sign_vp_2,pku_1) then
+                {473}if ((n_c'_2,u''_2,V'_2,uri''_2,a''_2) = (n_c_10,u_3,V_10,uri_3,e2_2)) then
+                {474}new tkn_access_6: bitstring;
+                {475}let m_73: bitstring = enc((tag10,tkn_access_6,sig(tkn_access_6,skv_1)),symk_av_6) in
+                {476}event auth_VerifierSendsLastMessageToApp(m_68,m_69,m_70,m_71,m_72,m_73);
+                {477}out(ch((tkn_access_6,sig(tkn_access_6,skv_1))), access_token_fromVerifier);
+                {446}let talksOnlyToHonest_10: bool = false in
+                {478}if talksOnlyToHonest_10 then
+                (
+                    {479}event auth_VerifierCompletesProtocol(m_68,m_69,m_70,m_71,m_72,m_73)
+                ) | (
+                    {480}out(ch(vpr_10), rule_fromVerifier)
+                )
+            )
+            else
+                {482}in(c_3, m_74: bitstring);
+                {483}let (tag3'_3: bitstring,n_a_7: bitstring,pk_sa_3: PublicKey) = adec(m_74,skv_1) in
+                {484}if (tag3'_3 = tag3) then
+                {485}new symk_av_7: SymmetricKey;
+                {486}new n_b_7: bitstring;
+                {487}let m_75: bitstring = aenc((tag4,n_a_7,n_b_7,symk_av_7),pk_sa_3) in
+                {488}out(c_3, m_75);
+                {489}in(c_3, m_76: bitstring);
+                {490}let (tag5'_3: bitstring,n_b'_3: bitstring,u'_15: bitstring,a'_15: bitstring,uri'_11: bitstring) = dec(m_76,symk_av_7) in
+                {491}if (tag5 = tag5'_3) then
+                {492}if ((n_b'_3,u'_15,uri'_11,a'_15) = (n_b_7,e_2,uri_3,e2_2)) then
+                {493}new n_c_11: bitstring;
+                {494}new V_11: bitstring;
+                {495}let vpr_11: bitstring = (e_2,uri_3,e2_2) in
+                {496}let m'_5: bitstring = (n_c_11,V_11,vpr_11) in
+                {497}let m_77: bitstring = enc((tag6,v_3,m'_5),symk_av_7) in
+                {498}event verifierInConeOfUser(m_74,m_75,m_76,m_77);
+                {499}out(c_3, m_77);
+                {500}in(c_3, m_78: bitstring);
+                {501}let (tag9'_3: bitstring,vp_signed_7: bitstring) = dec(m_78,symk_av_7) in
+                {502}if (tag9 = tag9'_3) then
+                {503}let (vp_11: bitstring,sign_vp_3: bitstring) = vp_signed_7 in
+                {504}let (n_c'_3: bitstring,vc_signed'_3: bitstring,V'_3: bitstring,uri''_3: bitstring,a''_3: bitstring) = vp_11 in
+                {505}let (vc_4: bitstring,sign_vc_3: bitstring) = vc_signed'_3 in
+                {506}let (u''_3: bitstring,iss'_3: bitstring) = vc_4 in
+                {507}if check(vp_signed_7,sign_vp_3,pke1_2) then
+                {508}if ((n_c'_3,u''_3,V'_3,uri''_3,a''_3) = (n_c_11,e_2,V_11,uri_3,e2_2)) then
+                {509}new tkn_access_7: bitstring;
+                {510}let m_79: bitstring = enc((tag10,tkn_access_7,sig(tkn_access_7,skv_1)),symk_av_7) in
+                {511}event auth_VerifierSendsLastMessageToApp(m_74,m_75,m_76,m_77,m_78,m_79);
+                {512}out(ch((tkn_access_7,sig(tkn_access_7,skv_1))), access_token_fromVerifier);
+                {481}let talksOnlyToHonest_11: bool = false in
+                {513}if talksOnlyToHonest_11 then
+                (
+                    {514}event auth_VerifierCompletesProtocol(m_74,m_75,m_76,m_77,m_78,m_79)
+                ) | (
+                    {515}out(ch(vpr_11), rule_fromVerifier)
+                )
+)
+
+-- Query not attacker(rule_fromVerifier[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+select attacker(pk(sk))/-5000
+200 rules inserted. Base: 161 rules (59 with conclusion selected). Queue: 61 rules.
+400 rules inserted. Base: 320 rules (100 with conclusion selected). Queue: 96 rules.
+600 rules inserted. Base: 442 rules (124 with conclusion selected). Queue: 89 rules.
+800 rules inserted. Base: 522 rules (153 with conclusion selected). Queue: 149 rules.
+1000 rules inserted. Base: 604 rules (181 with conclusion selected). Queue: 234 rules.
+1200 rules inserted. Base: 708 rules (215 with conclusion selected). Queue: 299 rules.
+1400 rules inserted. Base: 785 rules (231 with conclusion selected). Queue: 296 rules.
+1600 rules inserted. Base: 887 rules (260 with conclusion selected). Queue: 305 rules.
+1800 rules inserted. Base: 998 rules (277 with conclusion selected). Queue: 326 rules.
+2000 rules inserted. Base: 1082 rules (296 with conclusion selected). Queue: 305 rules.
+2200 rules inserted. Base: 1178 rules (320 with conclusion selected). Queue: 302 rules.
+2400 rules inserted. Base: 1274 rules (334 with conclusion selected). Queue: 284 rules.
+2600 rules inserted. Base: 1370 rules (358 with conclusion selected). Queue: 238 rules.
+2800 rules inserted. Base: 1419 rules (377 with conclusion selected). Queue: 214 rules.
+3000 rules inserted. Base: 1503 rules (401 with conclusion selected). Queue: 177 rules.
+3200 rules inserted. Base: 1574 rules (431 with conclusion selected). Queue: 141 rules.
+3400 rules inserted. Base: 1636 rules (455 with conclusion selected). Queue: 103 rules.
+3600 rules inserted. Base: 1720 rules (488 with conclusion selected). Queue: 73 rules.
+3800 rules inserted. Base: 1819 rules (522 with conclusion selected). Queue: 49 rules.
+4000 rules inserted. Base: 1920 rules (542 with conclusion selected). Queue: 26 rules.
+4200 rules inserted. Base: 2020 rules (554 with conclusion selected). Queue: 38 rules.
+Starting query not attacker(rule_fromVerifier[])
+RESULT not attacker(rule_fromVerifier[]) is true.
+-- Query not attacker(vp_fromProver[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+select attacker(pk(sk))/-5000
+200 rules inserted. Base: 161 rules (59 with conclusion selected). Queue: 61 rules.
+400 rules inserted. Base: 320 rules (100 with conclusion selected). Queue: 96 rules.
+600 rules inserted. Base: 442 rules (124 with conclusion selected). Queue: 89 rules.
+800 rules inserted. Base: 522 rules (153 with conclusion selected). Queue: 149 rules.
+1000 rules inserted. Base: 604 rules (181 with conclusion selected). Queue: 234 rules.
+1200 rules inserted. Base: 708 rules (215 with conclusion selected). Queue: 299 rules.
+1400 rules inserted. Base: 785 rules (231 with conclusion selected). Queue: 296 rules.
+1600 rules inserted. Base: 887 rules (260 with conclusion selected). Queue: 305 rules.
+1800 rules inserted. Base: 998 rules (277 with conclusion selected). Queue: 326 rules.
+2000 rules inserted. Base: 1082 rules (296 with conclusion selected). Queue: 305 rules.
+2200 rules inserted. Base: 1178 rules (320 with conclusion selected). Queue: 302 rules.
+2400 rules inserted. Base: 1274 rules (334 with conclusion selected). Queue: 284 rules.
+2600 rules inserted. Base: 1370 rules (358 with conclusion selected). Queue: 238 rules.
+2800 rules inserted. Base: 1419 rules (377 with conclusion selected). Queue: 214 rules.
+3000 rules inserted. Base: 1503 rules (401 with conclusion selected). Queue: 177 rules.
+3200 rules inserted. Base: 1574 rules (431 with conclusion selected). Queue: 141 rules.
+3400 rules inserted. Base: 1636 rules (455 with conclusion selected). Queue: 103 rules.
+3600 rules inserted. Base: 1720 rules (488 with conclusion selected). Queue: 73 rules.
+3800 rules inserted. Base: 1819 rules (522 with conclusion selected). Queue: 49 rules.
+4000 rules inserted. Base: 1920 rules (542 with conclusion selected). Queue: 26 rules.
+4200 rules inserted. Base: 2020 rules (554 with conclusion selected). Queue: 38 rules.
+Starting query not attacker(vp_fromProver[])
+RESULT not attacker(vp_fromProver[]) is true.
+-- Query not attacker(vp_fromVerifier[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+select attacker(pk(sk))/-5000
+200 rules inserted. Base: 161 rules (59 with conclusion selected). Queue: 61 rules.
+400 rules inserted. Base: 320 rules (100 with conclusion selected). Queue: 96 rules.
+600 rules inserted. Base: 442 rules (124 with conclusion selected). Queue: 89 rules.
+800 rules inserted. Base: 522 rules (153 with conclusion selected). Queue: 149 rules.
+1000 rules inserted. Base: 604 rules (181 with conclusion selected). Queue: 234 rules.
+1200 rules inserted. Base: 708 rules (215 with conclusion selected). Queue: 299 rules.
+1400 rules inserted. Base: 785 rules (231 with conclusion selected). Queue: 296 rules.
+1600 rules inserted. Base: 887 rules (260 with conclusion selected). Queue: 305 rules.
+1800 rules inserted. Base: 998 rules (277 with conclusion selected). Queue: 326 rules.
+2000 rules inserted. Base: 1082 rules (296 with conclusion selected). Queue: 305 rules.
+2200 rules inserted. Base: 1178 rules (320 with conclusion selected). Queue: 302 rules.
+2400 rules inserted. Base: 1274 rules (334 with conclusion selected). Queue: 284 rules.
+2600 rules inserted. Base: 1370 rules (358 with conclusion selected). Queue: 238 rules.
+2800 rules inserted. Base: 1419 rules (377 with conclusion selected). Queue: 214 rules.
+3000 rules inserted. Base: 1503 rules (401 with conclusion selected). Queue: 177 rules.
+3200 rules inserted. Base: 1574 rules (431 with conclusion selected). Queue: 141 rules.
+3400 rules inserted. Base: 1636 rules (455 with conclusion selected). Queue: 103 rules.
+3600 rules inserted. Base: 1720 rules (488 with conclusion selected). Queue: 73 rules.
+3800 rules inserted. Base: 1819 rules (522 with conclusion selected). Queue: 49 rules.
+4000 rules inserted. Base: 1920 rules (542 with conclusion selected). Queue: 26 rules.
+4200 rules inserted. Base: 2020 rules (554 with conclusion selected). Queue: 38 rules.
+Starting query not attacker(vp_fromVerifier[])
+RESULT not attacker(vp_fromVerifier[]) is true.
+-- Query not attacker(access_token_fromVerifier[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+select attacker(pk(sk))/-5000
+200 rules inserted. Base: 161 rules (59 with conclusion selected). Queue: 61 rules.
+400 rules inserted. Base: 320 rules (100 with conclusion selected). Queue: 96 rules.
+600 rules inserted. Base: 442 rules (124 with conclusion selected). Queue: 89 rules.
+800 rules inserted. Base: 522 rules (153 with conclusion selected). Queue: 149 rules.
+1000 rules inserted. Base: 604 rules (181 with conclusion selected). Queue: 234 rules.
+1200 rules inserted. Base: 708 rules (215 with conclusion selected). Queue: 299 rules.
+1400 rules inserted. Base: 785 rules (231 with conclusion selected). Queue: 296 rules.
+1600 rules inserted. Base: 887 rules (260 with conclusion selected). Queue: 305 rules.
+1800 rules inserted. Base: 998 rules (277 with conclusion selected). Queue: 326 rules.
+2000 rules inserted. Base: 1082 rules (296 with conclusion selected). Queue: 305 rules.
+2200 rules inserted. Base: 1178 rules (320 with conclusion selected). Queue: 302 rules.
+2400 rules inserted. Base: 1274 rules (334 with conclusion selected). Queue: 284 rules.
+2600 rules inserted. Base: 1370 rules (358 with conclusion selected). Queue: 238 rules.
+2800 rules inserted. Base: 1419 rules (377 with conclusion selected). Queue: 214 rules.
+3000 rules inserted. Base: 1503 rules (401 with conclusion selected). Queue: 177 rules.
+3200 rules inserted. Base: 1574 rules (431 with conclusion selected). Queue: 141 rules.
+3400 rules inserted. Base: 1636 rules (455 with conclusion selected). Queue: 103 rules.
+3600 rules inserted. Base: 1720 rules (488 with conclusion selected). Queue: 73 rules.
+3800 rules inserted. Base: 1819 rules (522 with conclusion selected). Queue: 49 rules.
+4000 rules inserted. Base: 1920 rules (542 with conclusion selected). Queue: 26 rules.
+4200 rules inserted. Base: 2020 rules (554 with conclusion selected). Queue: 38 rules.
+Starting query not attacker(access_token_fromVerifier[])
+RESULT not attacker(access_token_fromVerifier[]) is true.
+-- Query inj-event(auth_UserCompletesProtocol(m_handshakeReq,m_handshakeResp,m_complete,m_vpr,m_vp)) ==> inj-event(auth_AppSendsLastMessageToUser(m_handshakeReq,m_handshakeResp,m_complete,m_80,m_81,m_82,m_83,m_vpr)) && inj-event(verifierInConeOfUser(m_80,m_81,m_82,m_83)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+select attacker(pk(sk))/-5000
+200 rules inserted. Base: 163 rules (58 with conclusion selected). Queue: 59 rules.
+400 rules inserted. Base: 323 rules (99 with conclusion selected). Queue: 101 rules.
+600 rules inserted. Base: 445 rules (122 with conclusion selected). Queue: 95 rules.
+800 rules inserted. Base: 525 rules (146 with conclusion selected). Queue: 138 rules.
+1000 rules inserted. Base: 610 rules (180 with conclusion selected). Queue: 237 rules.
+1200 rules inserted. Base: 718 rules (211 with conclusion selected). Queue: 293 rules.
+1400 rules inserted. Base: 790 rules (228 with conclusion selected). Queue: 289 rules.
+1600 rules inserted. Base: 897 rules (259 with conclusion selected). Queue: 312 rules.
+1800 rules inserted. Base: 1011 rules (277 with conclusion selected). Queue: 333 rules.
+2000 rules inserted. Base: 1093 rules (295 with conclusion selected). Queue: 310 rules.
+2200 rules inserted. Base: 1189 rules (318 with conclusion selected). Queue: 302 rules.
+2400 rules inserted. Base: 1280 rules (333 with conclusion selected). Queue: 287 rules.
+2600 rules inserted. Base: 1374 rules (356 with conclusion selected). Queue: 238 rules.
+2800 rules inserted. Base: 1428 rules (377 with conclusion selected). Queue: 222 rules.
+3000 rules inserted. Base: 1519 rules (400 with conclusion selected). Queue: 182 rules.
+3200 rules inserted. Base: 1585 rules (429 with conclusion selected). Queue: 146 rules.
+3400 rules inserted. Base: 1636 rules (448 with conclusion selected). Queue: 106 rules.
+3600 rules inserted. Base: 1733 rules (487 with conclusion selected). Queue: 79 rules.
+3800 rules inserted. Base: 1822 rules (516 with conclusion selected). Queue: 60 rules.
+4000 rules inserted. Base: 1924 rules (537 with conclusion selected). Queue: 45 rules.
+4200 rules inserted. Base: 2035 rules (550 with conclusion selected). Queue: 26 rules.
+4400 rules inserted. Base: 2138 rules (556 with conclusion selected). Queue: 25 rules.
+Starting query inj-event(auth_UserCompletesProtocol(m_handshakeReq,m_handshakeResp,m_complete,m_vpr,m_vp)) ==> inj-event(auth_AppSendsLastMessageToUser(m_handshakeReq,m_handshakeResp,m_complete,m_80,m_81,m_82,m_83,m_vpr)) && inj-event(verifierInConeOfUser(m_80,m_81,m_82,m_83))
+goal reachable: e_3 ≠ u[] && b-inj-event(auth_AppSendsLastMessageToUser(aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),aenc((tag2,n_u_8,n_d_8,symk_ua_8),pk(sk_su_4)),enc((tag2_bis,n_d_8,u[]),symk_ua_8),aenc((tag3,n_a_8,pk(sk_sa_4)),pk(skv[])),aenc((tag4,n_a_8,n_b_8,symk_av_8),pk(sk_sa_4)),enc((tag5,n_b_8,e_3,a[],uri),symk_av_8),enc((tag6,v[],(n_c_12,V_12,(e_3,uri,a[]))),symk_av_8),enc((tag7,a[],v[],n_r_8,(n_c_12,V_12,(e_3,uri,a[]))),symk_ua_8)),@occ239_1) && b-inj-event(verifierInConeOfUser(aenc((tag3,n_a_8,pk(sk_sa_4)),pk(skv[])),aenc((tag4,n_a_8,n_b_8,symk_av_8),pk(sk_sa_4)),enc((tag5,n_b_8,e_3,a[],uri),symk_av_8),enc((tag6,v[],(n_c_12,V_12,(e_3,uri,a[]))),symk_av_8)),@occ427_1) && attacker(pke2_3) && attacker(pke1_3) && attacker(euri_2) && attacker(pke2_4) && attacker(pke1_4) && attacker(e_3) && attacker(euri_3) && attacker(pke2_5) && attacker(pke1_5) -> inj-event(auth_UserCompletesProtocol(aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),aenc((tag2,n_u_8,n_d_8,symk_ua_8),pk(sk_su_4)),enc((tag2_bis,n_d_8,u[]),symk_ua_8),enc((tag7,a[],v[],n_r_8,(n_c_12,V_12,(e_3,uri,a[]))),symk_ua_8),enc((tag8,u[],n_r_8,((n_c_12,((i[],u[]),sig((i[],u[]),ski[])),V_12,uri,a[]),sig((n_c_12,((i[],u[]),sig((i[],u[]),ski[])),V_12,uri,a[]),sku[]))),symk_ua_8)),@occ58_1)
+The 1st, 2nd hypotheses occur strictly before the conclusion.
+The 3rd, 4th, 5th, 6th, 7th, 8th, 9th, 10th, 11th hypotheses occur before the conclusion.
+Abbreviations:
+n_u_8 = n_u[euri = euri_3,pke2 = pke2_5,pke1 = pke1_5,e2 = v[],e = a[],!1 = @sid]
+sk_su_4 = sk_su[euri = euri_3,pke2 = pke2_5,pke1 = pke1_5,e2 = v[],e = a[],!1 = @sid]
+n_d_8 = n_d_5[m_26 = aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),euri_1 = euri_2,pke2_1 = pke2_4,pke1_1 = pke1_4,e2_1 = v[],e_1 = e_3,!1 = @sid_1]
+symk_ua_8 = symk_ua_5[m_26 = aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),euri_1 = euri_2,pke2_1 = pke2_4,pke1_1 = pke1_4,e2_1 = v[],e_1 = e_3,!1 = @sid_1]
+n_a_8 = n_a_1[m_2_bis_5 = enc((tag2_bis,n_d_8,u[]),symk_ua_8),m_26 = aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),euri_1 = euri_2,pke2_1 = pke2_4,pke1_1 = pke1_4,e2_1 = v[],e_1 = e_3,!1 = @sid_1]
+sk_sa_4 = sk_sa_1[m_2_bis_5 = enc((tag2_bis,n_d_8,u[]),symk_ua_8),m_26 = aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),euri_1 = euri_2,pke2_1 = pke2_4,pke1_1 = pke1_4,e2_1 = v[],e_1 = e_3,!1 = @sid_1]
+n_b_8 = n_b_5[m_62 = aenc((tag3,n_a_8,pk(sk_sa_4)),pk(skv[])),pke2_2 = pke2_3,pke1_2 = pke1_3,e2_2 = a[],e_2 = e_3,!1 = @sid_2]
+symk_av_8 = symk_av_5[m_62 = aenc((tag3,n_a_8,pk(sk_sa_4)),pk(skv[])),pke2_2 = pke2_3,pke1_2 = pke1_3,e2_2 = a[],e_2 = e_3,!1 = @sid_2]
+n_c_12 = n_c_9[m_64 = enc((tag5,n_b_8,e_3,a[],uri),symk_av_8),m_62 = aenc((tag3,n_a_8,pk(sk_sa_4)),pk(skv[])),pke2_2 = pke2_3,pke1_2 = pke1_3,e2_2 = a[],e_2 = e_3,!1 = @sid_2]
+V_12 = V_9[m_64 = enc((tag5,n_b_8,e_3,a[],uri),symk_av_8),m_62 = aenc((tag3,n_a_8,pk(sk_sa_4)),pk(skv[])),pke2_2 = pke2_3,pke1_2 = pke1_3,e2_2 = a[],e_2 = e_3,!1 = @sid_2]
+n_r_8 = n_r_5[m_31 = enc((tag6,v[],(n_c_12,V_12,(e_3,uri,a[]))),symk_av_8),m_29 = aenc((tag4,n_a_8,n_b_8,symk_av_8),pk(sk_sa_4)),m_2_bis_5 = enc((tag2_bis,n_d_8,u[]),symk_ua_8),m_26 = aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),euri_1 = euri_2,pke2_1 = pke2_4,pke1_1 = pke1_4,e2_1 = v[],e_1 = e_3,!1 = @sid_1]
+@occ58_1 = @occ58[m_7 = enc((tag7,a[],v[],n_r_8,(n_c_12,V_12,(e_3,uri,a[]))),symk_ua_8),m_2 = aenc((tag2,n_u_8,n_d_8,symk_ua_8),pk(sk_su_4)),euri = euri_3,pke2 = pke2_5,pke1 = pke1_5,e2 = v[],e = a[],!1 = @sid]
+@occ239_1 = @occ239[m_31 = enc((tag6,v[],(n_c_12,V_12,(e_3,uri,a[]))),symk_av_8),m_29 = aenc((tag4,n_a_8,n_b_8,symk_av_8),pk(sk_sa_4)),m_2_bis_5 = enc((tag2_bis,n_d_8,u[]),symk_ua_8),m_26 = aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),euri_1 = euri_2,pke2_1 = pke2_4,pke1_1 = pke1_4,e2_1 = v[],e_1 = e_3,!1 = @sid_1]
+@occ427_1 = @occ427[m_64 = enc((tag5,n_b_8,e_3,a[],uri),symk_av_8),m_62 = aenc((tag3,n_a_8,pk(sk_sa_4)),pk(skv[])),pke2_2 = pke2_3,pke1_2 = pke1_3,e2_2 = a[],e_2 = e_3,!1 = @sid_2]
+goal reachable: b-inj-event(auth_AppSendsLastMessageToUser(aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),aenc((tag2,n_u_8,n_d_8,symk_ua_8),pk(sk_su_4)),enc((tag2_bis,n_d_8,u[]),symk_ua_8),aenc((tag3,n_a_8,pk(sk_sa_4)),pk(skv[])),aenc((tag4,n_a_8,n_b_8,symk_av_8),pk(sk_sa_4)),enc((tag5,n_b_8,u[],a[],uri),symk_av_8),enc((tag6,v[],(n_c_12,V_12,(u[],uri,a[]))),symk_av_8),enc((tag7,a[],v[],n_r_8,(n_c_12,V_12,(u[],uri,a[]))),symk_ua_8)),@occ188_1) && b-inj-event(verifierInConeOfUser(aenc((tag3,n_a_8,pk(sk_sa_4)),pk(skv[])),aenc((tag4,n_a_8,n_b_8,symk_av_8),pk(sk_sa_4)),enc((tag5,n_b_8,u[],a[],uri),symk_av_8),enc((tag6,v[],(n_c_12,V_12,(u[],uri,a[]))),symk_av_8)),@occ391_1) && attacker(pke2_3) && attacker(pke1_3) && attacker(euri_2) && attacker(pke2_4) && attacker(pke1_4) && attacker(euri_3) && attacker(pke2_5) && attacker(pke1_5) -> inj-event(auth_UserCompletesProtocol(aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),aenc((tag2,n_u_8,n_d_8,symk_ua_8),pk(sk_su_4)),enc((tag2_bis,n_d_8,u[]),symk_ua_8),enc((tag7,a[],v[],n_r_8,(n_c_12,V_12,(u[],uri,a[]))),symk_ua_8),enc((tag8,u[],n_r_8,((n_c_12,((i[],u[]),sig((i[],u[]),ski[])),V_12,uri,a[]),sig((n_c_12,((i[],u[]),sig((i[],u[]),ski[])),V_12,uri,a[]),sku[]))),symk_ua_8)),@occ58_1)
+The 1st, 2nd hypotheses occur strictly before the conclusion.
+The 3rd, 4th, 5th, 6th, 7th, 8th, 9th, 10th hypotheses occur before the conclusion.
+Abbreviations:
+n_u_8 = n_u[euri = euri_3,pke2 = pke2_5,pke1 = pke1_5,e2 = v[],e = a[],!1 = @sid]
+sk_su_4 = sk_su[euri = euri_3,pke2 = pke2_5,pke1 = pke1_5,e2 = v[],e = a[],!1 = @sid]
+n_d_8 = n_d_4[m_16 = aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),euri_1 = euri_2,pke2_1 = pke2_4,pke1_1 = pke1_4,e2_1 = v[],e_1 = u[],!1 = @sid_1]
+symk_ua_8 = symk_ua_4[m_16 = aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),euri_1 = euri_2,pke2_1 = pke2_4,pke1_1 = pke1_4,e2_1 = v[],e_1 = u[],!1 = @sid_1]
+n_a_8 = n_a[m_2_bis_4 = enc((tag2_bis,n_d_8,u[]),symk_ua_8),m_16 = aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),euri_1 = euri_2,pke2_1 = pke2_4,pke1_1 = pke1_4,e2_1 = v[],e_1 = u[],!1 = @sid_1]
+sk_sa_4 = sk_sa[m_2_bis_4 = enc((tag2_bis,n_d_8,u[]),symk_ua_8),m_16 = aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),euri_1 = euri_2,pke2_1 = pke2_4,pke1_1 = pke1_4,e2_1 = v[],e_1 = u[],!1 = @sid_1]
+n_b_8 = n_b_4[m_56 = aenc((tag3,n_a_8,pk(sk_sa_4)),pk(skv[])),pke2_2 = pke2_3,pke1_2 = pke1_3,e2_2 = a[],e_2 = u[],!1 = @sid_2]
+symk_av_8 = symk_av_4[m_56 = aenc((tag3,n_a_8,pk(sk_sa_4)),pk(skv[])),pke2_2 = pke2_3,pke1_2 = pke1_3,e2_2 = a[],e_2 = u[],!1 = @sid_2]
+n_c_12 = n_c_8[m_58 = enc((tag5,n_b_8,u[],a[],uri),symk_av_8),m_56 = aenc((tag3,n_a_8,pk(sk_sa_4)),pk(skv[])),pke2_2 = pke2_3,pke1_2 = pke1_3,e2_2 = a[],e_2 = u[],!1 = @sid_2]
+V_12 = V_8[m_58 = enc((tag5,n_b_8,u[],a[],uri),symk_av_8),m_56 = aenc((tag3,n_a_8,pk(sk_sa_4)),pk(skv[])),pke2_2 = pke2_3,pke1_2 = pke1_3,e2_2 = a[],e_2 = u[],!1 = @sid_2]
+n_r_8 = n_r_4[m_21 = enc((tag6,v[],(n_c_12,V_12,(u[],uri,a[]))),symk_av_8),m_19 = aenc((tag4,n_a_8,n_b_8,symk_av_8),pk(sk_sa_4)),m_2_bis_4 = enc((tag2_bis,n_d_8,u[]),symk_ua_8),m_16 = aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),euri_1 = euri_2,pke2_1 = pke2_4,pke1_1 = pke1_4,e2_1 = v[],e_1 = u[],!1 = @sid_1]
+@occ58_1 = @occ58[m_7 = enc((tag7,a[],v[],n_r_8,(n_c_12,V_12,(u[],uri,a[]))),symk_ua_8),m_2 = aenc((tag2,n_u_8,n_d_8,symk_ua_8),pk(sk_su_4)),euri = euri_3,pke2 = pke2_5,pke1 = pke1_5,e2 = v[],e = a[],!1 = @sid]
+@occ188_1 = @occ188[m_21 = enc((tag6,v[],(n_c_12,V_12,(u[],uri,a[]))),symk_av_8),m_19 = aenc((tag4,n_a_8,n_b_8,symk_av_8),pk(sk_sa_4)),m_2_bis_4 = enc((tag2_bis,n_d_8,u[]),symk_ua_8),m_16 = aenc((tag1,n_u_8,pk(sk_su_4)),pk(ska[])),euri_1 = euri_2,pke2_1 = pke2_4,pke1_1 = pke1_4,e2_1 = v[],e_1 = u[],!1 = @sid_1]
+@occ391_1 = @occ391[m_58 = enc((tag5,n_b_8,u[],a[],uri),symk_av_8),m_56 = aenc((tag3,n_a_8,pk(sk_sa_4)),pk(skv[])),pke2_2 = pke2_3,pke1_2 = pke1_3,e2_2 = a[],e_2 = u[],!1 = @sid_2]
+RESULT inj-event(auth_UserCompletesProtocol(m_handshakeReq,m_handshakeResp,m_complete,m_vpr,m_vp)) ==> inj-event(auth_AppSendsLastMessageToUser(m_handshakeReq,m_handshakeResp,m_complete,m_80,m_81,m_82,m_83,m_vpr)) && inj-event(verifierInConeOfUser(m_80,m_81,m_82,m_83)) is true.
+-- Query inj-event(auth_VerifierCompletesProtocol(m_handshake_ver,m_handshake_resp_ver,m_uri,m_vpr,m_vp,m_accesstoken)) ==> inj-event(auth_AppSendsLastMessageToVerifier(m_80,m_81,m_2_bis_8,m_handshake_ver,m_handshake_resp_ver,m_uri,m_vpr,m_82,m_83,m_vp)) && inj-event(auth_UserSendsLastMessageToApp(m_80,m_81,m_2_bis_8,m_82,m_83)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+select attacker(pk(sk))/-5000
+200 rules inserted. Base: 161 rules (59 with conclusion selected). Queue: 61 rules.
+400 rules inserted. Base: 323 rules (101 with conclusion selected). Queue: 105 rules.
+600 rules inserted. Base: 449 rules (125 with conclusion selected). Queue: 94 rules.
+800 rules inserted. Base: 526 rules (149 with conclusion selected). Queue: 138 rules.
+1000 rules inserted. Base: 611 rules (183 with conclusion selected). Queue: 237 rules.
+1200 rules inserted. Base: 719 rules (214 with conclusion selected). Queue: 293 rules.
+1400 rules inserted. Base: 791 rules (231 with conclusion selected). Queue: 289 rules.
+1600 rules inserted. Base: 898 rules (262 with conclusion selected). Queue: 312 rules.
+1800 rules inserted. Base: 1012 rules (280 with conclusion selected). Queue: 333 rules.
+2000 rules inserted. Base: 1094 rules (298 with conclusion selected). Queue: 310 rules.
+2200 rules inserted. Base: 1190 rules (321 with conclusion selected). Queue: 303 rules.
+2400 rules inserted. Base: 1281 rules (336 with conclusion selected). Queue: 288 rules.
+2600 rules inserted. Base: 1375 rules (359 with conclusion selected). Queue: 240 rules.
+2800 rules inserted. Base: 1428 rules (380 with conclusion selected). Queue: 224 rules.
+3000 rules inserted. Base: 1520 rules (401 with conclusion selected). Queue: 182 rules.
+3200 rules inserted. Base: 1588 rules (430 with conclusion selected). Queue: 146 rules.
+3400 rules inserted. Base: 1640 rules (451 with conclusion selected). Queue: 108 rules.
+3600 rules inserted. Base: 1735 rules (489 with conclusion selected). Queue: 80 rules.
+3800 rules inserted. Base: 1822 rules (519 with conclusion selected). Queue: 58 rules.
+4000 rules inserted. Base: 1922 rules (539 with conclusion selected). Queue: 38 rules.
+4200 rules inserted. Base: 2034 rules (551 with conclusion selected). Queue: 10 rules.
+4400 rules inserted. Base: 2119 rules (557 with conclusion selected). Queue: 51 rules.
+Starting query inj-event(auth_VerifierCompletesProtocol(m_handshake_ver,m_handshake_resp_ver,m_uri,m_vpr,m_vp,m_accesstoken)) ==> inj-event(auth_AppSendsLastMessageToVerifier(m_80,m_81,m_2_bis_8,m_handshake_ver,m_handshake_resp_ver,m_uri,m_vpr,m_82,m_83,m_vp)) && inj-event(auth_UserSendsLastMessageToApp(m_80,m_81,m_2_bis_8,m_82,m_83))
+RESULT inj-event(auth_VerifierCompletesProtocol(m_handshake_ver,m_handshake_resp_ver,m_uri,m_vpr,m_vp,m_accesstoken)) ==> inj-event(auth_AppSendsLastMessageToVerifier(m_80,m_81,m_2_bis_8,m_handshake_ver,m_handshake_resp_ver,m_uri,m_vpr,m_82,m_83,m_vp)) && inj-event(auth_UserSendsLastMessageToApp(m_80,m_81,m_2_bis_8,m_82,m_83)) is true.
+-- Query inj-event(auth_AppCompletesProtocol(m_80,m_81,m_2_bis_8,m_handshakeReq,m_handshakeResp,m_uri,m_rule,m_82,m_83,m_vp,m_accesstoken)) ==> inj-event(auth_VerifierSendsLastMessageToApp(m_handshakeReq,m_handshakeResp,m_uri,m_rule,m_vp,m_accesstoken)) && inj-event(auth_UserSendsLastMessageToApp(m_80,m_81,m_2_bis_8,m_82,m_83)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+select attacker(pk(sk))/-5000
+200 rules inserted. Base: 162 rules (58 with conclusion selected). Queue: 57 rules.
+400 rules inserted. Base: 323 rules (100 with conclusion selected). Queue: 106 rules.
+600 rules inserted. Base: 451 rules (124 with conclusion selected). Queue: 93 rules.
+800 rules inserted. Base: 532 rules (148 with conclusion selected). Queue: 133 rules.
+1000 rules inserted. Base: 612 rules (183 with conclusion selected). Queue: 239 rules.
+1200 rules inserted. Base: 720 rules (213 with conclusion selected). Queue: 291 rules.
+1400 rules inserted. Base: 791 rules (231 with conclusion selected). Queue: 287 rules.
+1600 rules inserted. Base: 902 rules (262 with conclusion selected). Queue: 312 rules.
+1800 rules inserted. Base: 1012 rules (280 with conclusion selected). Queue: 337 rules.
+2000 rules inserted. Base: 1102 rules (298 with conclusion selected). Queue: 310 rules.
+2200 rules inserted. Base: 1191 rules (319 with conclusion selected). Queue: 303 rules.
+2400 rules inserted. Base: 1282 rules (336 with conclusion selected). Queue: 290 rules.
+2600 rules inserted. Base: 1377 rules (358 with conclusion selected). Queue: 238 rules.
+2800 rules inserted. Base: 1429 rules (379 with conclusion selected). Queue: 226 rules.
+3000 rules inserted. Base: 1523 rules (399 with conclusion selected). Queue: 182 rules.
+3200 rules inserted. Base: 1593 rules (430 with conclusion selected). Queue: 147 rules.
+3400 rules inserted. Base: 1644 rules (451 with conclusion selected). Queue: 109 rules.
+3600 rules inserted. Base: 1737 rules (489 with conclusion selected). Queue: 80 rules.
+3800 rules inserted. Base: 1822 rules (518 with conclusion selected). Queue: 59 rules.
+4000 rules inserted. Base: 1923 rules (539 with conclusion selected). Queue: 41 rules.
+4200 rules inserted. Base: 2034 rules (551 with conclusion selected). Queue: 16 rules.
+4400 rules inserted. Base: 2147 rules (557 with conclusion selected). Queue: 76 rules.
+4600 rules inserted. Base: 2248 rules (557 with conclusion selected). Queue: 14 rules.
+Starting query inj-event(auth_AppCompletesProtocol(m_80,m_81,m_2_bis_8,m_handshakeReq,m_handshakeResp,m_uri,m_rule,m_82,m_83,m_vp,m_accesstoken)) ==> inj-event(auth_VerifierSendsLastMessageToApp(m_handshakeReq,m_handshakeResp,m_uri,m_rule,m_vp,m_accesstoken)) && inj-event(auth_UserSendsLastMessageToApp(m_80,m_81,m_2_bis_8,m_82,m_83))
+RESULT inj-event(auth_AppCompletesProtocol(m_80,m_81,m_2_bis_8,m_handshakeReq,m_handshakeResp,m_uri,m_rule,m_82,m_83,m_vp,m_accesstoken)) ==> inj-event(auth_VerifierSendsLastMessageToApp(m_handshakeReq,m_handshakeResp,m_uri,m_rule,m_vp,m_accesstoken)) && inj-event(auth_UserSendsLastMessageToApp(m_80,m_81,m_2_bis_8,m_82,m_83)) is true.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query not attacker(rule_fromVerifier[]) is true.
+
+Query not attacker(vp_fromProver[]) is true.
+
+Query not attacker(vp_fromVerifier[]) is true.
+
+Query not attacker(access_token_fromVerifier[]) is true.
+
+Query inj-event(auth_UserCompletesProtocol(m_handshakeReq,m_handshakeResp,m_complete,m_vpr,m_vp)) ==> inj-event(auth_AppSendsLastMessageToUser(m_handshakeReq,m_handshakeResp,m_complete,m_80,m_81,m_82,m_83,m_vpr)) && inj-event(verifierInConeOfUser(m_80,m_81,m_82,m_83)) is true.
+
+Query inj-event(auth_VerifierCompletesProtocol(m_handshake_ver,m_handshake_resp_ver,m_uri,m_vpr,m_vp,m_accesstoken)) ==> inj-event(auth_AppSendsLastMessageToVerifier(m_80,m_81,m_2_bis_8,m_handshake_ver,m_handshake_resp_ver,m_uri,m_vpr,m_82,m_83,m_vp)) && inj-event(auth_UserSendsLastMessageToApp(m_80,m_81,m_2_bis_8,m_82,m_83)) is true.
+
+Query inj-event(auth_AppCompletesProtocol(m_80,m_81,m_2_bis_8,m_handshakeReq,m_handshakeResp,m_uri,m_rule,m_82,m_83,m_vp,m_accesstoken)) ==> inj-event(auth_VerifierSendsLastMessageToApp(m_handshakeReq,m_handshakeResp,m_uri,m_rule,m_vp,m_accesstoken)) && inj-event(auth_UserSendsLastMessageToApp(m_80,m_81,m_2_bis_8,m_82,m_83)) is true.
+
+--------------------------------------------------------------
+
