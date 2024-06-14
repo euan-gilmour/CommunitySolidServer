@@ -4,12 +4,12 @@
  alt="[Solid logo]" height="150" align="right"/>
 
 
-**The Community Solid Server is open software
+**The [Community Solid Server](https://github.com/CommunitySolidServer/CommunitySolidServer) is open software
 that provides you with a [Solid](https://solidproject.org/) Pod and identity.
 This Pod acts as your own personal storage space
 so you can share data with people and Solid applications.**
 
-This version of the Community Solid Server supports a new VC-based authentication protocol as an alternative to Solid-OIDC. An outline of this protocol, the modifications applied to CSS in order to implement it, and a demonstration can be seen in the sections below.
+This modified version of the Community Solid Server supports a new VC-based authentication protocol as an alternative to Solid-OIDC. An outline of this protocol, the modifications applied to CSS in order to implement it, and a demonstration can be seen in the sections below.
 
 ## The VC-Based Protocol
 
@@ -62,7 +62,7 @@ And the server will start running on [http://localhost:3000/](http://localhost:3
 
 ## Demo Applications
 
-Two demo applications have been configured to interact with this version of the server and follow the VC-based protocol that has been adapted for Solid, with a separate App and User.
+Two demo applications have been configured to interact with this version of the server and follow the VC-based protocol that has been adapted for Solid, with a separated App and User.
 - **App** - [my-demo-app](https://github.com/ben3101/my-demo-app)
 - **User** - [my-demo-app-user](https://github.com/ben3101/my-demo-app-user)
 
