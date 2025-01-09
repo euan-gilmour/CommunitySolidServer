@@ -15,7 +15,7 @@
         acp:allOf [
             a acp:Matcher;
             acp:client "my-demo-app";
-            acp:issuer <did:web:issuer123.solidcommunity.net>;
-            acp:agent <did:web:ben3101.solidcommunity.net>;
+            acp:issuer <did:web:raw.githubusercontent.com:euan-gilmour:dids:main:issuer>;
+            acp:agent <did:web:raw.githubusercontent.com:euan-gilmour:dids:main:user>;
         ]
     ].

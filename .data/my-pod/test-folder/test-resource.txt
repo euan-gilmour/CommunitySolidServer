@@ -3,8 +3,8 @@ This is a text document that should only be readable to:
 - on a specific app, 
 - with a valid Verifiable Credential from a specific issuer.
 
-User - did:web:ben3101.solidcommunity.net
+User - did:web:raw.githubusercontent.com:euan-gilmour:dids:main:user
 App - my-demo-app
-Issuer - did:web:issuer123.solidcommunity.net
+Issuer - did:web:raw.githubusercontent.com:euan-gilmour:dids:main:issuer
 
 Hello World
